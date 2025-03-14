@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>User Authentication - HCRF</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #9f5f37;
+      --primary-dark: #673712;
+      --primary-light: #d79b6d;
+      --secondary: #229bd4;
+      --bg-color: #f0f2f5;
+      --text-color: #333;
+      --text-light: #777;
+      --white: #fff;
+      --error: #e74c3c;
+      --success: #2ecc71;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      transition: all 0.3s ease;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: var(--bg-color);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+      padding: 1rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Background decoration */
+    body::before, body::after {
+      content: '';
+      position: absolute;
+      width: 300px;
+      height: 300px;
+      border-radius: 50%;
+      opacity: 0.1;
+      z-index: -1;
+    }
+
+    body::before {
+      background: var(--primary-light);
+      top: -100px;
+      left: -100px;
+    }
+
+    body::after {
+      background: var(--secondary);
+      bottom: -100px;
+      right: -100px;
+    }
+
+    .container {
+      background: var(--white);
+      padding: 2.5rem;
+      border-radius: 15px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05), 
+                  0 1px 8px rgba(0, 0, 0, 0.05),
+                  0 30px 60px rgba(0, 0, 0, 0.05);
+      width: 100%;
+      max-width: 450px;
+      position: relative;
+      overflow: hidden;
+      transform: translateY(0);
+      animation: fadeIn 0.5s ease;
+    }
+
+    /* Animated gradient border */
+    .container::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 8px;
+      background: linear-gradient(90deg, var(--primary-light), var(--primary-dark), var(--primary-light));
+      background-size: 200% 100%;
+      animation: gradientBorder 3s ease infinite;
+    }
+
+    @keyframes gradientBorder {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .logo {
+      text-align: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .logo-text {
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--primary);
+      letter-spacing: 1px;
+    }
+
+    h1 {
+      margin-bottom: 1.5rem;
+      font-size: 1.8rem;
+      font-weight: 600;
+      text-align: center;
+      color: var(--primary);
+    }
+
+    form {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .input-group {
+      position: relative;
+      margin-bottom: 1.5rem;
+    }
+
+    .input-icon {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-light);
+      font-size: 1.1rem;
+    }
+
+    .input-group input {
+      width: 100%;
+      padding: 1rem 1rem 1rem 2.5rem;
+      font-size: 1rem;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      outline: none;
+      background: var(--white);
+      transition: all 0.3s ease;
+      color: var(--text-color);
+    }
+
+    .input-group input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(159, 95, 55, 0.1);
+    }
+
+    .input-group input:focus + .input-icon {
+      color: var(--primary);
+    }
+
+    .input-group label {
+      position: absolute;
+      top: 50%;
+      left: 2.5rem;
+      transform: translateY(-50%);
+      font-size: 1rem;
+      color: var(--text-light);
+      pointer-events: none;
+      transition: all 0.3s ease;
+    }
+
+    .input-group input:focus + .input-icon + label,
+    .input-group input:not(:placeholder-shown) + .input-icon + label {
+      top: 0;
+      left: 12px;
+      font-size: 0.75rem;
+      padding: 0 0.5rem;
+      background: var(--white);
+      color: var(--primary);
+    }
+
+    .password-toggle {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      cursor: pointer;
+      color: var(--text-light);
+      padding: 5px;
+      z-index: 2;
+    }
+
+    .password-toggle:hover {
+      color: var(--primary);
+    }
+
+    button {
+      background: var(--primary);
+      color: var(--white);
+      padding: 1rem;
+      font-size: 1rem;
+      font-weight: 600;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    button::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+      transition: 0.5s;
+    }
+
+    button:hover {
+      background: var(--secondary);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    button:hover::after {
+      left: 100%;
+    }
+
+    .link {
+      margin-top: 1.5rem;
+      text-align: center;
+      color: var(--text-light);
+      font-size: 0.95rem;
+    }
+
+    .link a {
+      color: var(--primary);
+      text-decoration: none;
+      font-weight: 600;
+      padding: 2px 0;
+      border-bottom: 1px solid transparent;
+    }
+
+    .link a:hover {
+      color: var(--secondary);
+      border-bottom: 1px solid var(--secondary);
+    }
+
+    .form-divider {
+      display: flex;
+      align-items: center;
+      margin: 1.5rem 0;
+    }
+
+    .form-divider::before,
+    .form-divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: #e0e0e0;
+    }
+
+    .form-divider span {
+      padding: 0 1rem;
+      color: var(--text-light);
+      font-size: 0.9rem;
+    }
+
+    .social-login {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .social-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background: #f5f5f5;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .social-btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .social-btn i {
+      font-size: 1.2rem;
+    }
+
+    .google { color: #DB4437; }
+    .facebook { color: #4267B2; }
+    .twitter { color: #1DA1F2; }
+
+    .alert {
+      padding: 0.8rem 1rem;
+      border-radius: 8px;
+      margin-bottom: 1.5rem;
+      font-size: 0.9rem;
+      display: none;
+    }
+
+    .alert-error {
+      background: rgba(231, 76, 60, 0.1);
+      color: var(--error);
+      border-left: 4px solid var(--error);
+    }
+
+    .alert-success {
+      background: rgba(46, 204, 113, 0.1);
+      color: var(--success);
+      border-left: 4px solid var(--success);
+    }
+
+    /* Password strength meter */
+    .password-strength {
+      height: 5px;
+      margin-top: 5px;
+      border-radius: 3px;
+      display: none;
+    }
+    
+    .password-strength-meter {
+      height: 100%;
+      border-radius: 3px;
+      transition: width 0.5s ease;
+    }
+
+    .strength-weak { background: #e74c3c; width: 25%; }
+    .strength-medium { background: #f39c12; width: 50%; }
+    .strength-good { background: #3498db; width: 75%; }
+    .strength-strong { background: #2ecc71; width: 100%; }
+
+    /* OTP Input styling */
+    .otp-container {
+      display: flex;
+      justify-content: space-between;
+      margin: 1.5rem 0;
+    }
+
+    .otp-input {
+      width: 50px;
+      height: 60px;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      text-align: center;
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: var(--primary);
+    }
+
+    .otp-input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(159, 95, 55, 0.1);
+    }
+
+    /* Loader */
+    .loader {
+      display: none;
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(255, 255, 255, 0.8);
+      z-index: 10;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .loader::after {
+      content: '';
+      width: 40px;
+      height: 40px;
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid var(--primary);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 480px) {
+      .container {
+        padding: 1.5rem;
+      }
+      
+      h1 {
+        font-size: 1.5rem;
+      }
+      
+      .otp-input {
+        width: 40px;
+        height: 50px;
+        font-size: 1.2rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container" id="form-container">
+    <!-- Forms will be dynamically injected here -->
+    <div class="loader" id="form-loader"></div>
+  </div>
+
+  <script src="config.js"></script>
+  <script>
+    const renderForm = (html) => {
+      document.getElementById('form-container').innerHTML = html + '<div class="loader" id="form-loader"></div>';
+    };
+
+    const showLoader = () => {
+      document.getElementById('form-loader').style.display = 'flex';
+    };
+
+    const hideLoader = () => {
+      document.getElementById('form-loader').style.display = 'none';
+    };
+
+    const showAlert = (message, type = 'error') => {
+      const alertDiv = document.createElement('div');
+      alertDiv.className = `alert alert-${type}`;
+      alertDiv.textContent = message;
+      alertDiv.style.display = 'block';
+      
+      const form = document.querySelector('form');
+      form.parentNode.insertBefore(alertDiv, form);
+      
+      setTimeout(() => {
+        alertDiv.style.opacity = '0';
+        setTimeout(() => alertDiv.remove(), 300);
+      }, 3000);
+    };
+
+    const togglePasswordVisibility = (inputId, toggleId) => {
+      const passwordInput = document.getElementById(inputId);
+      const toggleIcon = document.getElementById(toggleId);
+      if (passwordInput.type === 'password') {
+        passwordInput.type = 'text';
+        toggleIcon.innerHTML = '<i class="fas fa-eye-slash"></i>';
+      } else {
+        passwordInput.type = 'password';
+        toggleIcon.innerHTML = '<i class="fas fa-eye"></i>';
+      }
+    };
+
+    const checkPasswordStrength = (password) => {
+      const strengthMeter = document.querySelector('.password-strength-meter');
+      const strengthContainer = document.querySelector('.password-strength');
+      
+      if (!strengthMeter || !strengthContainer) return;
+      
+      strengthContainer.style.display = 'block';
+      
+      // Basic password strength rules
+      let strength = 0;
+      if (password.length >= 8) strength += 1;
+      if (password.match(/[a-z]/) && password.match(/[A-Z]/)) strength += 1;
+      if (password.match(/\d/)) strength += 1;
+      if (password.match(/[^a-zA-Z\d]/)) strength += 1;
+      
+      strengthMeter.className = 'password-strength-meter';
+      
+      if (strength === 0) {
+        strengthMeter.classList.add('strength-weak');
+      } else if (strength === 2) {
+        strengthMeter.classList.add('strength-medium');
+      } else if (strength === 3) {
+        strengthMeter.classList.add('strength-good');
+      } else if (strength >= 4) {
+        strengthMeter.classList.add('strength-strong');
+      }
+    };
+
+    const showLoginForm = () => {
+      renderForm(`
+        <div class="logo">
+          <div class="logo-text">HCRF</div>
+        </div>
+        <h1>Welcome Back</h1>
+        <form id="login-form">
+          <div class="input-group">
+            <input type="email" id="email" placeholder=" " required />
+            <span class="input-icon"><i class="fas fa-envelope"></i></span>
+            <label for="email">Email Address</label>
+          </div>
+          <div class="input-group">
+            <input type="password" id="password" placeholder=" " required />
+            <span class="input-icon"><i class="fas fa-lock"></i></span>
+            <label for="password">Password</label>
+            <span id="toggle-password" class="password-toggle" onclick="togglePasswordVisibility('password', 'toggle-password')">
+              <i class="fas fa-eye"></i>
+            </span>
+          </div>
+          <button type="submit">Login <i class="fas fa-arrow-right"></i></button>
+        </form>
+        <div class="link">
+          <a href="#" onclick="showForgotPasswordForm()">Forgot Password?</a><br />
+          Don't have an account? <a href="#" onclick="showRegisterForm()">Register</a>
+        </div>
+        
+        </div>
+      `);
+
+      document.getElementById('login-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        showLoader();
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+        try {
+          const res = await fetch(`${API_BASE}/api/auth/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password }),
+          });
+          const data = await res.json();
+          hideLoader();
+          if (res.ok) {
+            localStorage.setItem('authToken', data.token);
+            localStorage.setItem('isAdmin', data.user.isAdmin);
+            localStorage.setItem('isMember', data.user.isMember); 
+            window.location.href = "index.html"; 
+          } else {
+            showAlert(data.message || 'Login failed');
+          }
+        } catch (error) {
+          hideLoader();
+          console.error(error);
+          showAlert('Something went wrong! Please try again.');
+        }
+      });
+    };
+
+    const showForgotPasswordForm = () => {
+      renderForm(`
+        <div class="logo">
+          <div class="logo-text">HCRF</div>
+        </div>
+        <h1>Forgot Password</h1>
+        <form id="forgot-password-form">
+          <div class="input-group">
+            <input type="email" id="email" placeholder=" " required />
+            <span class="input-icon"><i class="fas fa-envelope"></i></span>
+            <label for="email">Email Address</label>
+          </div>
+          <button type="submit">Send Reset Link <i class="fas fa-paper-plane"></i></button>
+        </form>
+        <div class="link">
+          Remembered your password? <a href="#" onclick="showLoginForm()">Back to Login</a>
+        </div>
+      `);
+
+      document.getElementById('forgot-password-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        showLoader();
+        const email = document.getElementById('email').value;
+        try {
+          const res = await fetch(`${API_BASE}/api/auth/forgot-password`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email }),
+          });
+          const data = await res.json();
+          hideLoader();
+          if (res.ok) {
+            showAlert('Password reset link has been sent to your email.', 'success');
+            setTimeout(() => showLoginForm(), 3000);
+          } else {
+            showAlert(data.message || 'Failed to send reset link');
+          }
+        } catch (error) {
+          hideLoader();
+          console.error(error);
+          showAlert('Something went wrong! Please try again.');
+        }
+      });
+    };
+
+    const showResetPasswordForm = (token) => {
+      renderForm(`
+        <div class="logo">
+          <div class="logo-text">HCRF</div>
+        </div>
+        <h1>Reset Password</h1>
+        <form id="reset-password-form">
+          <div class="input-group">
+            <input type="password" id="password" placeholder=" " required onkeyup="checkPasswordStrength(this.value)" />
+            <span class="input-icon"><i class="fas fa-lock"></i></span>
+            <label for="password">New Password</label>
+            <span id="toggle-password" class="password-toggle" onclick="togglePasswordVisibility('password', 'toggle-password')">
+              <i class="fas fa-eye"></i>
+            </span>
+            <div class="password-strength">
+              <div class="password-strength-meter"></div>
+            </div>
+          </div>
+          <div class="input-group">
+            <input type="password" id="confirm-password" placeholder=" " required />
+            <span class="input-icon"><i class="fas fa-lock"></i></span>
+            <label for="confirm-password">Confirm New Password</label>
+            <span id="toggle-confirm-password" class="password-toggle" onclick="togglePasswordVisibility('confirm-password', 'toggle-confirm-password')">
+              <i class="fas fa-eye"></i>
+            </span>
+          </div>
+          <button type="submit">Reset Password <i class="fas fa-check"></i></button>
+        </form>
+      `);
+
+      document.getElementById('reset-password-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        showLoader();
+        const password = document.getElementById('password').value;
+        const confirmPassword = document.getElementById('confirm-password').value;
+
+        if (password !== confirmPassword) {
+          hideLoader();
+          showAlert('Passwords do not match!');
+          return;
+        }
+
+        try {
+          const res = await fetch(`${API_BASE}/api/auth/reset-password`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ token, password }),
+          });
+          const data = await res.json();
+          hideLoader();
+          if (res.ok) {
+            showAlert('Password reset successfully!', 'success');
+            setTimeout(() => showLoginForm(), 3000);
+          } else {
+            showAlert(data.message || 'Failed to reset password');
+          }
+        } catch (error) {
+          hideLoader();
+          console.error(error);
+          showAlert('Something went wrong! Please try again.');
+        }
+      });
+    };
+
+    const showRegisterForm = () => {
+      renderForm(`
+        <div class="logo">
+          <div class="logo-text">HCRF</div>
+        </div>
+        <h1>Create Account</h1>
+        <form id="register-form">
+          <div class="input-group">
+            <input type="text" id="name" placeholder=" " required />
+            <span class="input-icon"><i class="fas fa-user"></i></span>
+            <label for="name">Full Name</label>
+          </div>
+          <div class="input-group">
+            <input type="email" id="email" placeholder=" " required />
+            <span class="input-icon"><i class="fas fa-envelope"></i></span>
+            <label for="email">Email Address</label>
+          </div>
+          <div class="input-group">
+            <input type="password" id="password" placeholder=" " required onkeyup="checkPasswordStrength(this.value)" />
+            <span class="input-icon"><i class="fas fa-lock"></i></span>
+            <label for="password">Password</label>
+            <span id="toggle-password" class="password-toggle" onclick="togglePasswordVisibility('password', 'toggle-password')">
+              <i class="fas fa-eye"></i>
+            </span>
+            <div class="password-strength">
+              <div class="password-strength-meter"></div>
+            </div>
+          </div>
+          <button type="submit">Register <i class="fas fa-user-plus"></i></button>
+        </form>
+        <div class="link">
+          Already have an account? <a href="#" onclick="showLoginForm()">Login</a>
+        </div>
+       
+        </div>
+      `);
+
+      document.getElementById('register-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        showLoader();
+        const name = document.getElementById('name').value;
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+        try {
+          const res = await fetch(`${API_BASE}/api/auth/register`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name, email, password }),
+          });
+          const data = await res.json();
+          hideLoader();
+          if (res.ok) {
+            showAlert('Registered successfully!', 'success');
+            setTimeout(() => showOtpVerificationForm(email), 2000);
+          } else {
+            showAlert(data.message || 'Registration failed');
+          }
+        } catch (error) {
+          hideLoader();
+          console.error(error);
+          showAlert('Something went wrong! Please try again.');
+        }
+      });
+    };
+
+    const showOtpVerificationForm = (email) => {
+      renderForm(`
+        <div class="logo">
+          <div class="logo-text">HCRF</div>
+        </div>
+        <h1>Verify Your Account</h1>
+        <p style="text-align: center; margin-bottom: 1.5rem; color: var(--text-light);">
+          We've sent a verification code to your email address.
+        </p>
+        <form id="otp-form">
+          <div class="otp-container">
+            <input type="text" class="otp-input" maxlength="1" autofocus>
+            <input type="text" class="otp-input" maxlength="1">
+            <input type="text" class="otp-input" maxlength="1">
+            <input type="text" class="otp-input" maxlength="1">
+            <input type="text" class="otp-input" maxlength="1">
+            <input type="text" class="otp-input" maxlength="1">
+          </div>
+          <input type="hidden" id="otp" value="">
+          <button type="submit">Verify <i class="fas fa-check-circle"></i></button>
+        </form>
+       
+      `);
+
+      // OTP input handling - auto focus next input
+      const inputs = document.querySelectorAll('.otp-input');
+      inputs.forEach((input, index) => {
+        input.addEventListener('keyup', (e) => {
+          if (e.key >= 0 && e.key <= 9) {
+            inputs[index].value = e.key;
+            if (index < inputs.length - 1) {
+              inputs[index + 1].focus();
+            }
+            updateOtpValue();
+          } else if (e.key === 'Backspace') {
+            inputs[index].value = '';
+            if (index > 0) {
+              inputs[index - 1].focus();
+            }
+            updateOtpValue();
+          }
+        });
+      });
+
+      // Function to update hidden OTP field
+      function updateOtpValue() {
+        let otp = '';
+        inputs.forEach(input => {
+          otp += input.value;
+        });
+        document.getElementById('otp').value = otp;
+      }
+
+     
+
+      document.getElementById('otp-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        showLoader();
+        const otp = document.getElementById('otp').value;
+        
+        // Check if OTP is complete
+        if (otp.length !== 6) {
+          hideLoader();
+          showAlert('Please enter the complete 6-digit OTP');
+          return;
+        }
+        
+        try {
+          const res = await fetch(`${API_BASE}/api/auth/verify-otp`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, otp }),
+          });
+          const data = await res.json();
+          hideLoader();
+          if (res.ok) {
+            showAlert('OTP verified successfully!', 'success');
+            setTimeout(() => showLoginForm(), 2000);
+          } else {
+            showAlert(data.message || 'OTP verification failed');
+          }
+        } catch (error) {
+          hideLoader();
+          console.error(error);
+          showAlert('Something went wrong! Please try again.');
+        }
+      });
+    };
+
+    // Check if there's a reset token in the URL
+    const getResetToken = () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      return urlParams.get('token');
+    };
+
+    const init = () => {
+      const token = getResetToken();
+      if (token) {
+        showResetPasswordForm(token);
+      } else {
+        showLoginForm(); // Changed to login as the initial form
+      }
+    };
+
+    init();
+  </script>
+</body>
+</html>

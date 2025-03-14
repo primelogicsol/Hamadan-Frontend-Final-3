@@ -1,0 +1,2942 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ultimate Dashboard Header</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.0/chart.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+    const token = localStorage.getItem("authToken");
+    if (token) {
+        try {
+            const decodedToken = JSON.parse(atob(token.split(".")[1]));
+            console.log("Decoded Token:", decodedToken); // Debug
+
+            const currentTime = Math.floor(Date.now() / 1000);
+            if (decodedToken.exp < currentTime) {
+                alert("Session expired. Please log in again.");
+                window.location.href = "index.html";
+                return;
+            }
+
+            if (decodedToken.isAdmin) {
+                console.log("Access Granted: Admin User");
+                // Load admin-specific data
+                fetchData(); // Call your data fetching function here
+            } else {
+                alert("Unauthorized access. Admins only.");
+                window.location.href = "index.html";
+            }
+        } catch (error) {
+            console.error("Error decoding token:", error);
+            alert("Invalid token. Please log in again.");
+            window.location.href = "index.html";
+        }
+    } else {
+        alert("Unauthorized. Please log in.");
+        window.location.href = "index.html";
+    }
+});
+    </script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+        
+        :root {
+            --primary: #6d28d9;
+            --primary-light: #8b5cf6;
+            --primary-dark: #5b21b6;
+            --secondary: #10b981;
+            --dark-bg: #0f172a;
+            --darker-bg: #0a0f1c;
+            --card-bg: #1e293b;
+            --text-color: #f1f5f9;
+            --text-muted: #94a3b8;
+            --border-color: rgba(255, 255, 255, 0.06);
+            --transition-speed: 0.3s;
+            --glow-color: rgba(109, 40, 217, 0.5);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background-color: var(--darker-bg);
+            color: var(--text-color);
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 2rem;
+            background-color: var(--dark-bg);
+            height: 70px;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 3px 20px rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(10px);
+            transition: all var(--transition-speed) ease;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .header:hover {
+            box-shadow: 0 5px 25px rgba(109, 40, 217, 0.3);
+        }
+
+        /* Logo */
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 700;
+            font-size: 1.5rem;
+            color: var(--primary-light);
+            text-decoration: none;
+            position: relative;
+            z-index: 2;
+        }
+
+        .logo-icon {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 40px;
+            width: 40px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            border-radius: 12px;
+            box-shadow: 0 0 15px rgba(109, 40, 217, 0.5);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.5s ease;
+        }
+
+        .logo-icon::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: conic-gradient(from 0deg, transparent 0%, transparent 30%, rgba(255, 255, 255, 0.3) 40%, transparent 50%);
+            animation: rotate 4s linear infinite;
+        }
+
+        @keyframes rotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .logo-icon svg {
+            height: 22px;
+            width: 22px;
+            fill: white;
+            z-index: 2;
+        }
+
+        .logo span {
+            background: linear-gradient(90deg, var(--primary-light), #d8b4fe);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 700;
+        }
+
+        /* Navigation */
+        .nav-container {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 0.25rem;
+            position: relative;
+        }
+
+        .nav-item {
+            position: relative;
+            padding: 0.75rem 1rem;
+            color: var(--text-color);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            border-radius: 12px;
+            transition: all var(--transition-speed) cubic-bezier(0.34, 1.56, 0.64, 1);
+            font-weight: 500;
+            font-size: 0.95rem;
+            z-index: 2;
+            overflow: hidden;
+        }
+
+        .nav-item::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to right, rgba(109, 40, 217, 0.1), rgba(139, 92, 246, 0.1));
+            opacity: 0;
+            transition: opacity 0.4s ease;
+            z-index: -1;
+            border-radius: 12px;
+        }
+
+        .nav-item:hover::before, .nav-item.active::before {
+            opacity: 1;
+        }
+
+        .nav-item.active {
+            color: var(--primary-light);
+            font-weight: 600;
+        }
+
+        .nav-item:hover {
+            transform: translateY(-3px);
+            color: var(--primary-light);
+        }
+
+        .nav-item .nav-icon {
+            width: 22px;
+            height: 22px;
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            position: relative;
+        }
+
+        .nav-item:hover .nav-icon, .nav-item.active .nav-icon {
+            fill: var(--primary-light);
+            transform: scale(1.1);
+        }
+
+        /* Active indicator */
+        .active-bg {
+            position: absolute;
+            background: linear-gradient(to right, rgba(109, 40, 217, 0.2), rgba(139, 92, 246, 0.1));
+            border-radius: 12px;
+            z-index: 1;
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            box-shadow: 0 5px 15px rgba(109, 40, 217, 0.2);
+        }
+
+        /* Notification badge */
+        .notification-badge {
+            position: absolute;
+            top: 0;
+            right: 0;
+            background: var(--secondary);
+            color: white;
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            font-size: 0.65rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transform: translate(25%, -25%);
+            box-shadow: 0 2px 5px rgba(16, 185, 129, 0.5);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: translate(25%, -25%) scale(1); }
+            50% { transform: translate(25%, -25%) scale(1.1); }
+            100% { transform: translate(25%, -25%) scale(1); }
+        }
+
+        /* Search box */
+        .search-box {
+            position: relative;
+            margin-right: 1rem;
+        }
+
+        .search-input {
+            background-color: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 0.5rem 1rem 0.5rem 2.5rem;
+            color: var(--text-color);
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            width: 200px;
+        }
+
+        .search-input:focus {
+            outline: none;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-color: var(--primary-light);
+            box-shadow: 0 0 0 2px rgba(109, 40, 217, 0.2);
+            width: 250px;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            fill: var(--text-muted);
+            width: 16px;
+            height: 16px;
+            pointer-events: none;
+            transition: all 0.3s ease;
+        }
+
+        .search-input:focus + .search-icon {
+            fill: var(--primary-light);
+        }
+
+        /* User profile */
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            border: 1px solid transparent;
+        }
+
+        .user-profile:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+            border-color: var(--border-color);
+        }
+
+        .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-weight: 600;
+            font-size: 1.2rem;
+            box-shadow: 0 3px 10px rgba(59, 130, 246, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .avatar::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.3), transparent);
+            animation: shimmer 3s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+
+        .user-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .user-name {
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        .user-role {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        /* Mobile menu */
+        .menu-toggle {
+            display: none;
+            flex-direction: column;
+            justify-content: space-between;
+            width: 30px;
+            height: 21px;
+            cursor: pointer;
+            z-index: 10;
+        }
+
+        .menu-toggle span {
+            display: block;
+            height: 3px;
+            width: 100%;
+            border-radius: 3px;
+            background-color: var(--text-color);
+            transition: all 0.3s cubic-bezier(0.68, -0.6, 0.32, 1.6);
+        }
+
+        .menu-toggle.active span:nth-of-type(1) {
+            transform: rotate(45deg) translate(5px, 6px);
+            background-color: var(--primary-light);
+        }
+
+        .menu-toggle.active span:nth-of-type(2) {
+            opacity: 0;
+        }
+
+        .menu-toggle.active span:nth-of-type(3) {
+            transform: rotate(-45deg) translate(5px, -6px);
+            background-color: var(--primary-light);
+        }
+
+        /* Content placeholder */
+        .content {
+            margin-top: 100px;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        /* Tooltip */
+        .tooltip {
+            position: absolute;
+            background-color: var(--dark-bg);
+            color: white;
+            padding: 0.5rem 0.75rem;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            bottom: -40px;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.3s ease;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border-color);
+            white-space: nowrap;
+        }
+
+        .tooltip::before {
+            content: '';
+            position: absolute;
+            top: -5px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-width: 0 5px 5px 5px;
+            border-style: solid;
+            border-color: transparent transparent var(--dark-bg) transparent;
+        }
+
+        .nav-item:hover .tooltip {
+            opacity: 1;
+            bottom: -35px;
+        }
+
+        /* Theme toggle */
+        .theme-toggle {
+            margin-left: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background-color: rgba(255, 255, 255, 0.05);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 1px solid var(--border-color);
+        }
+
+        .theme-toggle:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            transform: rotate(15deg);
+        }
+
+        .theme-icon {
+            width: 20px;
+            height: 20px;
+            fill: var(--text-muted);
+            transition: all 0.3s ease;
+        }
+
+        .theme-toggle:hover .theme-icon {
+            fill: var(--primary-light);
+        }
+
+        /* Responsive design */
+        @media (max-width: 1200px) {
+            .search-box {
+                display: none;
+            }
+            
+            .nav-item span {
+                display: none;
+            }
+            
+            .nav-item {
+                padding: 0.75rem;
+            }
+            
+            .tooltip {
+                display: none;
+            }
+        }
+
+        @media (max-width: 992px) {
+            .user-info {
+                display: none;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                padding: 0 1rem;
+            }
+            
+            .nav-container {
+                position: static;
+            }
+            
+            .nav-links {
+                position: fixed;
+                flex-direction: column;
+                top: 70px;
+                left: 0;
+                width: 100%;
+                background-color: var(--darker-bg);
+                transform: translateY(-150%);
+                transition: transform 0.5s cubic-bezier(0.68, -0.6, 0.32, 1.6);
+                z-index: 9;
+                padding: 1rem 0;
+                gap: 0.5rem;
+                box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+                border-bottom: 1px solid var(--border-color);
+            }
+            
+            .nav-links.active {
+                transform: translateY(0);
+            }
+            
+            .nav-item {
+                width: 90%;
+                margin: 0 auto;
+                padding: 1rem;
+                border-radius: 12px;
+            }
+            
+            .nav-item span {
+                display: inline;
+            }
+            
+            .active-bg {
+                display: none;
+            }
+            
+            .menu-toggle {
+                display: flex;
+            }
+            
+            .theme-toggle, .user-profile {
+                margin-left: auto;
+            }
+        }
+
+        /* Entrance animations */
+        @keyframes slideFromTop {
+            0% {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+            100% {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideFromRight {
+            0% {
+                transform: translateX(50px);
+                opacity: 0;
+            }
+            100% {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideFromLeft {
+            0% {
+                transform: translateX(-50px);
+                opacity: 0;
+            }
+            100% {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes fadeIn {
+            0% {
+                opacity: 0;
+            }
+            100% {
+                opacity: 1;
+            }
+        }
+
+        @keyframes popIn {
+            0% {
+                transform: scale(0.8);
+                opacity: 0;
+            }
+            70% {
+                transform: scale(1.1);
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .nav-item {
+            animation: slideFromTop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) backwards;
+        }
+
+        .nav-item:nth-child(1) { animation-delay: 0.1s; }
+        .nav-item:nth-child(2) { animation-delay: 0.15s; }
+        .nav-item:nth-child(3) { animation-delay: 0.2s; }
+        .nav-item:nth-child(4) { animation-delay: 0.25s; }
+        .nav-item:nth-child(5) { animation-delay: 0.3s; }
+        .nav-item:nth-child(6) { animation-delay: 0.35s; }
+        .nav-item:nth-child(7) { animation-delay: 0.4s; }
+        .nav-item:nth-child(8) { animation-delay: 0.45s; }
+
+        .logo {
+            animation: slideFromLeft 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) backwards;
+            animation-delay: 0.1s;
+        }
+
+        .search-box {
+            animation: fadeIn 0.5s ease backwards;
+            animation-delay: 0.3s;
+        }
+
+        .user-profile {
+            animation: slideFromRight 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) backwards;
+            animation-delay: 0.2s;
+        }
+
+        .theme-toggle {
+            animation: popIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) backwards;
+            animation-delay: 0.4s;
+        }
+
+        /* Icon animations */
+        .nav-item:hover .nav-icon {
+            animation: rubberBand 0.8s;
+        }
+
+        @keyframes rubberBand {
+            0% { transform: scale(1); }
+            30% { transform: scale(1.25, 0.75); }
+            40% { transform: scale(0.75, 1.25); }
+            50% { transform: scale(1.15, 0.85); }
+            65% { transform: scale(0.95, 1.05); }
+            75% { transform: scale(1.05, 0.95); }
+            100% { transform: scale(1); }
+        }
+
+        /* Glow effect */
+        .nav-item.active::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 30px;
+            height: 10px;
+            background: radial-gradient(ellipse at center, var(--glow-color) 0%, transparent 70%);
+            animation: glow 2s infinite;
+        }
+
+        @keyframes glow {
+            0% { opacity: 0.5; }
+            50% { opacity: 1; }
+            100% { opacity: 0.5; }
+        }
+    </style>
+
+
+<style>
+    /* Base styles and resets */
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        background-color: #111827;
+        color: #e5e7eb;
+        line-height: 1.5;
+        min-height: 100vh;
+    }
+
+    /* Gradient background */
+    .gradient-bg {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, #111827 0%, #1f2937 100%);
+        z-index: -1;
+    }
+
+    /* Dashboard container */
+    .dashboard {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 2rem;
+    }
+
+    /* Dashboard header */
+    .dashboard-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+    }
+
+    .dashboard-header h1 {
+        font-size: 2rem;
+        font-weight: 600;
+        color: #f3f4f6;
+    }
+
+    /* Notification icon */
+    .notification-icon {
+        position: relative;
+        cursor: pointer;
+        margin-left: 1rem;
+    }
+
+    .notification-icon i {
+        font-size: 1.5rem;
+        color: #f3f4f6;
+    }
+
+    .notification-count {
+        position: absolute;
+        top: -20px;
+        background-color: #ef4444;
+        color: white;
+        font-size: 0.75rem;
+        padding: 0.25rem 0.5rem;
+        border-radius: 50%;
+    }
+
+    /* Overlay for messages */
+    .overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.8);
+        z-index: 1000;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .overlay-content {
+        background-color: #1f2937;
+        padding: 2rem;
+        border-radius: 0.75rem;
+        max-width: 800px;
+        width: 90%;
+        max-height: 80vh;
+        overflow-y: auto;
+    }
+
+    .overlay-content h2 {
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+        color: #f3f4f6;
+    }
+
+    .overlay-content table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .overlay-content th,
+    .overlay-content td {
+        padding: 0.75rem;
+        text-align: left;
+        border-bottom: 1px solid #374151;
+    }
+
+    .overlay-content th {
+        background-color: #374151;
+        color: #f3f4f6;
+    }
+
+    .overlay-content td {
+        color: #d1d5db;
+    }
+
+    .overlay-content a {
+        color: #3b82f6;
+        text-decoration: none;
+    }
+
+    .overlay-content a:hover {
+        text-decoration: underline;
+    }
+
+    .close-overlay {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        font-size: 1.5rem;
+        color: #f3f4f6;
+        cursor: pointer;
+    }
+
+    /* Stats container */
+    .stats-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    /* Stat cards */
+    .stat-card {
+        background-color: #1f2937;
+        border-radius: 0.75rem;
+        padding: 1.5rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        text-align: center;
+    }
+
+    .stat-card h3 {
+        color: #9ca3af;
+        font-size: 0.875rem;
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+    }
+
+    .stat-card .number {
+        font-size: 1.875rem;
+        font-weight: 600;
+        color: #f3f4f6;
+        margin-bottom: 0.5rem;
+    }
+
+    .stat-card .icon {
+        font-size: 2rem;
+        color: #3b82f6;
+        margin-bottom: 0.5rem;
+    }
+
+    .trend {
+        font-size: 0.875rem;
+        color: #34d399;
+    }
+
+    /* Charts container */
+    .charts-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .chart-card {
+        background-color: #1f2937;
+        border-radius: 0.75rem;
+        padding: 1.5rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Responsive design */
+    @media (max-width: 768px) {
+        .dashboard {
+            padding: 1rem;
+        }
+
+        .charts-container {
+            grid-template-columns: 1fr;
+        }
+
+        .dashboard-header {
+            flex-direction: column;
+            gap: 1rem;
+            text-align: center;
+        }
+    }
+
+    /* Button styles */
+    .button {
+        padding: 0.5rem 1rem;
+        border-radius: 0.375rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s;
+        border: none;
+        outline: none;
+        background-color: #3b82f6;
+        color: white;
+    }
+
+    .button:hover {
+        background-color: #2563eb;
+    }
+</style>
+
+<style>
+    /* Base Styles & Variables */
+:root {
+    --primary: #6d28d9;
+    --primary-light: #8b5cf6;
+    --primary-dark: #5b21b6;
+    --secondary: #10b981;
+    --dark-bg: #0f172a;
+    --darker-bg: #0a0f1c;
+    --card-bg: #1e293b;
+    --text-color: #f1f5f9;
+    --text-muted: #94a3b8;
+    --border-color: rgba(255, 255, 255, 0.06);
+    --transition-speed: 0.3s;
+    --glow-color: rgba(109, 40, 217, 0.5);
+    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.4);
+    --shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.5);
+    --gradient-primary: linear-gradient(135deg, var(--primary), var(--primary-light));
+    --gradient-secondary: linear-gradient(135deg, var(--secondary), #06d6a0);
+    --border-radius: 12px;
+    --border-radius-sm: 8px;
+    --font-main: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+}
+
+/* Global Styles */
+body {
+    margin: 0;
+    padding: 0;
+    font-family: var(--font-main);
+    background: var(--darker-bg);
+    color: var(--text-color);
+    line-height: 1.5;
+    overflow-x: hidden;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--dark-bg);
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--primary-dark);
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--primary);
+}
+
+/* Dashboard Container */
+.traffic-dashboard-container {
+    width: 100%;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 24px;
+    /* background: var(--dark-bg); */
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+/* Dashboard Header */
+.traffic-dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.traffic-dashboard-title {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--text-color);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.traffic-dashboard-title i {
+    color: var(--primary-light);
+    font-size: 24px;
+}
+
+.traffic-actions {
+    display: flex;
+    gap: 12px;
+}
+
+/* Buttons */
+button {
+    background: var(--primary);
+    color: white;
+    border: none;
+    padding: 10px 16px;
+    border-radius: var(--border-radius-sm);
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all var(--transition-speed);
+    font-size: 14px;
+    box-shadow: var(--shadow-sm);
+}
+
+button:hover {
+    background: var(--primary-light);
+    box-shadow: 0 0 12px var(--glow-color);
+    transform: translateY(-2px);
+}
+
+button:active {
+    transform: translateY(0);
+}
+
+button i {
+    font-size: 14px;
+}
+
+#traffic-refreshBtn {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+}
+
+#traffic-refreshBtn:hover {
+    background: var(--dark-bg);
+}
+
+#traffic-applyFilters, #traffic-applyDateFilter {
+    background: var(--secondary);
+}
+
+#traffic-applyFilters:hover, #traffic-applyDateFilter:hover {
+    background: #0ca875;
+    box-shadow: 0 0 12px rgba(16, 185, 129, 0.5);
+}
+
+#traffic-exportBtn {
+    background: transparent;
+    border: 1px solid var(--border-color);
+    color: var(--text-color);
+}
+
+#traffic-exportBtn:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+/* Controls Section */
+.traffic-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 24px;
+    padding: 20px;
+    background: var(--card-bg);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-md);
+    justify-content: space-between;
+    position: relative;
+    overflow: hidden;
+}
+
+.traffic-controls::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background: var(--gradient-primary);
+}
+
+.traffic-filter-section, .traffic-date-filter {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+}
+
+.traffic-filter-title {
+    font-weight: 600;
+    color: var(--text-color);
+    font-size: 14px;
+    margin-right: 4px;
+}
+
+/* Select & Input Styling */
+select, input[type="date"] {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border-color);
+    color: var(--text-color);
+    padding: 10px 14px;
+    border-radius: var(--border-radius-sm);
+    font-size: 14px;
+    font-family: var(--font-main);
+    transition: all var(--transition-speed);
+    min-width: 150px;
+    appearance: none;
+    cursor: pointer;
+}
+
+select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    padding-right: 30px;
+}
+
+select:focus, input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(109, 40, 217, 0.2);
+}
+
+/* Dashboard Cards */
+.traffic-dashboard-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 24px;
+}
+
+.traffic-card {
+    background: var(--card-bg);
+    border-radius: var(--border-radius);
+    padding: 24px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: var(--shadow-md);
+    transition: all var(--transition-speed);
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.traffic-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-lg);
+}
+
+.traffic-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background: var(--gradient-primary);
+    opacity: 0.8;
+    transition: height var(--transition-speed);
+}
+
+.traffic-card:nth-child(2n)::before {
+    background: var(--gradient-secondary);
+}
+
+.traffic-card:hover::before {
+    height: 5px;
+}
+
+.traffic-card-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.traffic-card-icon {
+    width: 44px;
+    height: 44px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.traffic-card-icon i {
+    font-size: 18px;
+    color: var(--primary-light);
+}
+
+.traffic-card-title {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+.traffic-card-value {
+    margin: 10px 0 0;
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--text-color);
+}
+
+.traffic-card-trend {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.traffic-trend-up {
+    color: var(--secondary);
+}
+
+.traffic-trend-down {
+    color: #ef4444;
+}
+
+/* Charts Container */
+.traffic-charts-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 24px;
+}
+
+.traffic-chart-card {
+    background: var(--card-bg);
+    border-radius: var(--border-radius);
+    padding: 24px;
+    box-shadow: var(--shadow-md);
+    height: 400px;
+    display: flex;
+    flex-direction: column;
+}
+
+.traffic-chart-title {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 20px;
+    color: var(--text-color);
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+canvas {
+    flex: 1;
+    width: 100% !important;
+    max-height: 320px !important;
+}
+
+/* Data Table */
+.traffic-data-table {
+    background: var(--card-bg);
+    border-radius: var(--border-radius);
+    overflow: hidden;
+    box-shadow: var(--shadow-md);
+}
+
+.traffic-table-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.traffic-table-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-color);
+}
+
+.traffic-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.traffic-th {
+    text-align: left;
+    padding: 16px 24px;
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--text-muted);
+    border-bottom: 1px solid var(--border-color);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.traffic-td {
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--border-color);
+    font-size: 14px;
+    color: var(--text-color);
+    transition: all var(--transition-speed);
+}
+
+.traffic-tr:hover .traffic-td {
+    background: rgba(255, 255, 255, 0.03);
+}
+
+/* Pagination */
+.traffic-pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    padding: 20px;
+}
+
+.traffic-pagination button {
+    min-width: 40px;
+    height: 40px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: transparent;
+    color: var(--text-muted);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 0;
+    font-size: 14px;
+    box-shadow: none;
+}
+
+.traffic-pagination button:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--primary-light);
+    transform: none;
+    box-shadow: none;
+}
+
+.traffic-pagination button.active {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+}
+
+.traffic-pagination button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Loading & Error States */
+.traffic-loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 40px;
+}
+
+.traffic-loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid rgba(138, 75, 255, 0.2);
+    border-radius: 50%;
+    border-top: 3px solid var(--primary);
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.traffic-error-message {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    color: #ef4444;
+    padding: 20px;
+    font-weight: 500;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 992px) {
+    .traffic-controls {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .traffic-filter-section, .traffic-date-filter {
+        width: 100%;
+    }
+    
+    .traffic-charts-container {
+        grid-template-columns: 1fr;
+    }
+    
+    .traffic-chart-card {
+        height: 350px;
+    }
+}
+
+@media (max-width: 768px) {
+    .traffic-dashboard-cards {
+        grid-template-columns: 1fr;
+    }
+    
+    .traffic-dashboard-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+    }
+    
+    .traffic-actions {
+        width: 100%;
+    }
+    
+    .traffic-table-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+    
+    .traffic-table-actions {
+        width: 100%;
+    }
+    
+    .traffic-th, .traffic-td {
+        padding: 12px 16px;
+    }
+    
+    .traffic-pagination {
+        flex-wrap: wrap;
+    }
+}
+
+/* Responsive table */
+@media (max-width: 640px) {
+    .traffic-table {
+        display: block;
+    }
+    
+    .traffic-table thead, .traffic-table tbody, .traffic-table tr {
+        display: block;
+        width: 100%;
+    }
+    
+    .traffic-table thead tr {
+        position: absolute;
+        top: -9999px;
+        left: -9999px;
+    }
+    
+    .traffic-table tr {
+        border-bottom: 1px solid var(--border-color);
+        margin-bottom: 12px;
+        padding: 8px 0;
+    }
+    
+    .traffic-table td {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border: none;
+        position: relative;
+        padding: 10px 16px;
+        text-align: right;
+    }
+    
+    .traffic-table td::before {
+        content: attr(data-label);
+        position: absolute;
+        left: 16px;
+        width: 45%;
+        padding-right: 10px;
+        text-align: left;
+        font-weight: 600;
+        color: var(--text-muted);
+    }
+}
+
+/* Animations */
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+.traffic-card-value {
+    animation: pulse 2s ease-in-out infinite;
+}
+
+/* Glowing effect for cards */
+.traffic-card::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, var(--glow-color) 0%, transparent 70%);
+    opacity: 0;
+    transition: opacity var(--transition-speed);
+    pointer-events: none;
+    z-index: -1;
+}
+
+.traffic-card:hover::after {
+    opacity: 0.1;
+}
+
+/* Custom selection */
+::selection {
+    background: var(--primary);
+    color: white;
+}
+
+/* Card tooltip */
+.traffic-card {
+    position: relative;
+}
+
+.traffic-card:hover .traffic-card-tooltip {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.traffic-card-tooltip {
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%) translateY(10px);
+    background: var(--dark-bg);
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-color);
+    box-shadow: var(--shadow-sm);
+    white-space: nowrap;
+    opacity: 0;
+    transition: all var(--transition-speed);
+    pointer-events: none;
+    z-index: 10;
+}
+
+.traffic-card-tooltip::before {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border-width: 5px;
+    border-style: solid;
+    border-color: var(--dark-bg) transparent transparent transparent;
+}
+
+/* Focus styles */
+button:focus, select:focus, input:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(109, 40, 217, 0.3);
+}
+
+/* Glass morphism effect */
+.traffic-controls {
+    backdrop-filter: blur(12px);
+    background: rgba(30, 41, 59, 0.8);
+}
+
+/* Transition for chart hover */
+.traffic-chart-card {
+    transition: transform var(--transition-speed);
+}
+
+.traffic-chart-card:hover {
+    transform: translateY(-5px);
+}
+
+/* Dark mode toggle */
+.traffic-theme-toggle {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: var(--primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: var(--shadow-md);
+    z-index: 1000;
+    transition: all var(--transition-speed);
+}
+
+.traffic-theme-toggle:hover {
+    transform: scale(1.1);
+    box-shadow: 0 0 20px var(--glow-color);
+}
+
+.traffic-theme-toggle i {
+    font-size: 20px;
+    color: white;
+}
+
+/* Notification badge */
+.traffic-notification-badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--secondary);
+    color: white;
+    font-size: 10px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Tooltip for filter options */
+.traffic-filter-help {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    font-size: 10px;
+    text-align: center;
+    line-height: 16px;
+    margin-left: 5px;
+    cursor: help;
+    position: relative;
+}
+
+.traffic-filter-help::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%) translateY(-5px);
+    background: var(--dark-bg);
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-size: 12px;
+    width: 200px;
+    color: var(--text-color);
+    box-shadow: var(--shadow-sm);
+    opacity: 0;
+    visibility: hidden;
+    transition: all var(--transition-speed);
+    z-index: 100;
+}
+
+.traffic-filter-help:hover::after {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(-10px);
+}
+
+/* Table sorting indicators */
+.traffic-th.sortable {
+    cursor: pointer;
+    position: relative;
+}
+
+.traffic-th.sortable::after {
+    content: '⇅';
+    position: absolute;
+    right: 10px;
+    opacity: 0.5;
+    font-size: 14px;
+}
+
+.traffic-th.sortable.asc::after {
+    content: '↑';
+    opacity: 1;
+}
+
+.traffic-th.sortable.desc::after {
+    content: '↓';
+    opacity: 1;
+}
+
+/* No data indicator */
+.traffic-no-data {
+    text-align: center;
+    padding: 60px 0;
+    color: var(--text-muted);
+}
+
+.traffic-no-data i {
+    font-size: 48px;
+    margin-bottom: 16px;
+    opacity: 0.5;
+}
+
+.traffic-no-data p {
+    font-size: 16px;
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+/* Print styles */
+@media print {
+    .traffic-dashboard-container {
+        background: white;
+        color: black;
+        padding: 0;
+    }
+    
+    .traffic-actions,
+    .traffic-controls,
+    .traffic-pagination,
+    .traffic-theme-toggle {
+        display: none !important;
+    }
+    
+    .traffic-card,
+    .traffic-chart-card,
+    .traffic-data-table {
+        background: white;
+        box-shadow: none;
+        break-inside: avoid;
+    }
+    
+    .traffic-card::before,
+    .traffic-card::after {
+        display: none;
+    }
+    
+    .traffic-th,
+    .traffic-td {
+        color: black;
+        border-color: #ddd;
+    }
+    
+    .traffic-dashboard-header {
+        border-color: #ddd;
+    }
+}
+   </style>
+</head>
+<body>
+    <header class="header">
+        <a href="#" class="logo">
+            <!-- <div class="logo-icon">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22A10,10 0 0,1 2,12A10,10 0 0,1 12,2M12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20A8,8 0 0,0 20,12A8,8 0 0,0 12,4M12,6A6,6 0 0,1 18,12A6,6 0 0,1 12,18A6,6 0 0,1 6,12A6,6 0 0,1 12,6M12,8A4,4 0 0,0 8,12A4,4 0 0,0 12,16A4,4 0 0,0 16,12A4,4 0 0,0 12,8Z" />
+                </svg>
+            </div> -->
+            <span>KHCRF</span>
+        </a>
+
+        <div class="nav-container">
+            <nav class="nav-links" id="navLinks">
+                <a href="dashboard.html" class="nav-item active" data-index="0">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="currentColor">
+                        <!-- <path d="M10,20V14H14V20H19V12H22L12,3L2,12H5V20H10Z" /> -->
+                    </svg>
+                    <span>Home</span>
+                    <div class="tooltip">Home</div>
+                </a>
+                
+                <a href="message.html" class="nav-item" data-index="1">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="currentColor">
+                        <!-- <path d="M20,2H4A2,2 0 0,0 2,4V22L6,18H20A2,2 0 0,0 22,16V4C22,2.89 21.1,2 20,2Z" /> -->
+                    </svg>
+                    <span>Messages</span>
+                    <div class="notification-badge">3</div>
+                    <div class="tooltip">Messages</div>
+                </a>
+                
+                <a href="donationdashboard.html" class="nav-item" data-index="2">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="currentColor">
+                        <!-- <path d="M12.75,3.94C13.15,3.94 13.5,4.29 13.5,4.69C13.5,5.09 13.15,5.44 12.75,5.44H11.25V10.61L15.44,12.93L15.43,12.92C15.79,13.19 15.89,13.69 15.63,14.06C15.37,14.42 14.87,14.5 14.5,14.25L10.23,11.86C9.93,11.69 9.75,11.36 9.75,11V5.44H8.25C7.85,5.44 7.5,5.09 7.5,4.69C7.5,4.29 7.85,3.94 8.25,3.94H12.75M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22A10,10 0 0,1 2,12A10,10 0 0,1 12,2Z" /> -->
+                    </svg>
+                    <span>Donation</span>
+                    <div class="tooltip">Donation</div>
+                </a>
+                
+                <a href="user.html" class="nav-item" data-index="3">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="currentColor">
+                        <!-- <path d="M12,4A4,4 0 0,1 16,8A4,4 0 0,1 12,12A4,4 0 0,1 8,8A4,4 0 0,1 12,4M12,14C16.42,14 20,15.79 20,18V20H4V18C4,15.79 7.58,14 12,14Z" /> -->
+                    </svg>
+                    <span>User</span>
+                    <div class="tooltip">User</div>
+                </a>
+                
+                <a href="memberhipdashb.html" class="nav-item" data-index="4">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="currentColor">
+                        <!-- <path d="M12,5.5A3.5,3.5 0 0,1 15.5,9A3.5,3.5 0 0,1 12,12.5A3.5,3.5 0 0,1 8.5,9A3.5,3.5 0 0,1 12,5.5M5,8C5.56,8 6.08,8.15 6.53,8.42C6.38,9.85 6.8,11.27 7.66,12.38C7.16,13.34 6.16,14 5,14A3,3 0 0,1 2,11A3,3 0 0,1 5,8M19,8A3,3 0 0,1 22,11A3,3 0 0,1 19,14C17.84,14 16.84,13.34 16.34,12.38C17.2,11.27 17.62,9.85 17.47,8.42C17.92,8.15 18.44,8 19,8M5.5,18.25C5.5,16.18 8.41,14.5 12,14.5C15.59,14.5 18.5,16.18 18.5,18.25V20H5.5V18.25M0,20V18.5C0,17.11 1.89,15.94 4.45,15.6C3.86,16.28 3.5,17.22 3.5,18.25V20H0M24,20H20.5V18.25C20.5,17.22 20.14,16.28 19.55,15.6C22.11,15.94 24,17.11 24,18.5V20Z" /> -->
+                    </svg>
+                    <span>Membership</span>
+                    <div class="tooltip">Membership</div>
+                </a>
+                
+                <a href="badgedashboard.html" class="nav-item" data-index="5">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="currentColor">
+                        <!-- <path d="M17,3H7A2,2 0 0,0 5,5V21L12,18L19,21V5C19,3.89 18.1,3 17,3M17,18L12,15.82L7,18V5H17V18M16,10H8V12H16V10M16,6H8V8H16V6Z" /> -->
+                    </svg>
+                    <span>Badge Application</span>
+                    <div class="tooltip">Badge Application</div>
+                </a>
+                
+                <a href="books.html" class="nav-item" data-index="6">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="currentColor">
+                        <!-- <path d="M19,2L14,6.5V17.5L19,13V2M6.5,5C4.55,5 2.45,5.4 1,6.5V21.16C1,21.41 1.25,21.66 1.5,21.66C1.6,21.66 1.65,21.59 1.75,21.59C3.1,20.94 5.05,20.5 6.5,20.5C8.45,20.5 10.55,20.9 12,22C13.35,21.15 15.8,20.5 17.5,20.5C19.15,20.5 20.85,20.81 22.25,21.56C22.35,21.61 22.4,21.59 22.5,21.59C22.75,21.59 23,21.34 23,21.09V6.5C22.4,6.05 21.75,5.75 21,5.5V19C19.9,18.65 18.7,18.5 17.5,18.5C15.8,18.5 13.35,19.15 12,20V6.5C10.55,5.4 8.45,5 6.5,5Z" /> -->
+                    </svg>
+                    <span>Manage Books</span>
+                    <div class="tooltip">Manage Books</div>
+                </a>
+                
+              
+
+
+                <a href="certificationdashboard.html" class="nav-item" data-index="8">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="currentColor">
+                        <!-- <path d="M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22A10,10 0 0,1 2,12A10,10 0 0,1 12,2M12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20A8,8 0 0,0 20,12A8,8 0 0,0 12,4M12,6A6,6 0 0,1 18,12A6,6 0 0,1 12,18A6,6 0 0,1 6,12A6,6 0 0,1 12,6M12,8A4,4 0 0,0 8,12A4,4 0 0,0 12,16A4,4 0 0,0 16,12A4,4 0 0,0 12,8Z" /> -->
+                    </svg>
+                    <span>Certification</span>
+                    <div class="tooltip">Certification</div>
+                </a>
+                <a href="collaboration.html" class="nav-item" data-index="8">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="currentColor">
+                        <!-- <path d="M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22A10,10 0 0,1 2,12A10,10 0 0,1 12,2M12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20A8,8 0 0,0 20,12A8,8 0 0,0 12,4M12,6A6,6 0 0,1 18,12A6,6 0 0,1 12,18A6,6 0 0,1 6,12A6,6 0 0,1 12,6M12,8A4,4 0 0,0 8,12A4,4 0 0,0 12,16A4,4 0 0,0 16,12A4,4 0 0,0 12,8Z" /> -->
+                    </svg>
+                    <span>Collaboration</span>
+                    <div class="tooltip">Collaboration</div>
+                </a>
+                <a href="Pre-OrderDashboard.html" class="nav-item" data-index="8">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="currentColor">
+                        <!-- <path d="M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22A10,10 0 0,1 2,12A10,10 0 0,1 12,2M12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20A8,8 0 0,0 20,12A8,8 0 0,0 12,4M12,6A6,6 0 0,1 18,12A6,6 0 0,1 12,18A6,6 0 0,1 6,12A6,6 0 0,1 12,6M12,8A4,4 0 0,0 8,12A4,4 0 0,0 12,16A4,4 0 0,0 16,12A4,4 0 0,0 12,8Z" /> -->
+                    </svg>
+                    <span>Books Pre orders</span>
+                    <div class="tooltip"></div>
+                </a>
+                
+                <div class="active-bg"></div>
+            </nav>
+        </div>
+
+        <!-- <div class="right-section" style="display:flex; align-items:center;">
+            <div class="search-box">
+                <input type="text" class="search-input" placeholder="Search...">
+                <svg class="search-icon" viewBox="0 0 24 24">
+                    <path d="M9.5,3A6.5,6.5 0 0,1 16,9.5C16,11.11 15.41,12.59 14.44,13.73L14.71,14H15.5L20.5,19L19,20.5L14,15.5V14.71L13.73,14.44C12.59,15.41 11.11,16 9.5,16A6.5,6.5 0 0,1 3,9.5A6.5,6.5 0 0,1 9.5,3M9.5,5C7,5 5,7 5,9.5C5,12 7,14 9.5,14C12,14 14,12 14,9.5C14,7 12,5 9.5,5Z" />
+                </svg>
+            </div> -->
+
+            <!-- <div class="theme-toggle">
+                <svg class="theme-icon" viewBox="0 0 24 24">
+                    <path d="M12,18C11.11,18 10.26,17.8 9.5,17.45C11.56,16.5 13,14.42 13,12C13,9.58 11.56,7.5 9.5,6.55C10.26,6.2 11.11,6 12,6A6,6 0 0,1 18,12A6,6 0 0,1 12,18M20,8.69V4H15.31L12,0.69L8.69,4H4V8.69L0.69,12L4,15.31V20H8.69L12,23.31L15.31,20H20V15.31L23.31,12L20,8.69Z" />
+                </svg>
+            </div> -->
+
+            <!-- <div class="user-profile">
+                <div class="avatar">JD</div>
+                <div class="user-info">
+                    <div class="user-name">John Doe</div>
+                    <div class="user-role">Administrator</div>
+                </div>
+            </div> -->
+
+            <div class="menu-toggle" id="menuToggle">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </header>
+    <div class="dashboard" style="margin-top: 100px;">
+        <div class="dashboard-header">
+            <h1><i class="fas fa-users-cog"></i> User Management Dashboard</h1>
+            <div>
+                <button onclick="refreshDashboard()" class="button"><i class="fas fa-sync-alt"></i> Refresh Data</button>
+                <br>
+                <br>
+                <div class="notification-icon" onclick="openOverlay()">
+                    <i class="fas fa-bell"></i>
+                    <div class="notification-count" id="notificationCount">0</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Overlay for messages -->
+        <div class="overlay" id="overlay">
+            <div class="overlay-content">
+                <span class="close-overlay" onclick="closeOverlay()">&times;</span>
+                <h2>Messages (Last 24 Hours)</h2>
+                <div id="messages-list">Loading messages...</div>
+            </div>
+        </div>
+        <div class="stats-container">
+            <!-- Existing Stat Cards -->
+            <div class="stat-card" onclick="window.location.href='usermanagment.html';" style="cursor: pointer;">
+                <div class="icon"><i class="fas fa-users"></i></div>
+                <h3>Total Login Users</h3>
+                <div class="number" id="totalUsers">-</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="icon"><i class="fas fa-user-friends"></i></div>
+                <h3>Total Memberships</h3>
+                <div class="number" id="totalMembers">-</div>
+            </div>
+            <div class="stat-card">
+                <div class="icon"><i class="fas fa-hand-holding-heart"></i></div>
+                <h3>Total Donations</h3>
+                <div class="number" id="totalDonors">-</div>
+            </div>
+            <div class="stat-card">
+                <div class="icon"><i class="fas fa-user-shield"></i></div>
+                <h3>Total Admins</h3>
+                <div class="number" id="totalAdmins">-</div>
+            </div>
+            <div class="stat-card">
+                <div class="icon"><i class="fas fa-handshake"></i></div>
+                <h3>Total Collaborators</h3>
+                <div class="number" id="totalCollaborators">-</div>
+            </div>
+        
+            <!-- New Stat Cards -->
+            <div class="stat-card">
+                <div class="icon"><i class="fas fa-book"></i></div>
+                <h3>Total eBook Orders</h3>
+                <div class="number" id="totalEbookOrders">-</div>
+            </div>
+            <div class="stat-card">
+                <div class="icon"><i class="fas fa-chart-line"></i></div>
+                <h3>Total Business Evaluation</h3>
+                <div class="number" id="totalBusinessEvaluation">-</div>
+            </div>
+            <div class="stat-card">
+                <div class="icon"><i class="fas fa-certificate"></i></div>
+                <h3>Total Certification Orders</h3>
+                <div class="number" id="totalCertificationOrders">-</div>
+            </div>
+            <div class="stat-card">
+                <div class="icon"><i class="fas fa-id-badge"></i></div>
+                <h3>Badges Requested</h3>
+                <div class="number" id="totalBadgesRequested">-</div>
+            </div>
+            <div class="stat-card">
+                <div class="icon"><i class="fas fa-handshake"></i></div>
+                <h3>Total Partners</h3>
+                <div class="number" id="totalPartners">-</div>
+            </div>
+        </div>
+
+        <div class="charts-container">
+            <div class="chart-card">
+                <canvas id="userTypeChart"></canvas>
+            </div>
+            <div class="chart-card">
+                <canvas id="membershipStatusChart"></canvas>
+            </div>
+
+            
+        </div>
+    </div>
+
+
+    <div class="traffic-dashboard-container">
+        <!-- <div class="traffic-dashboard-header">
+            <div class="traffic-dashboard-title">
+                <i class="fas fa-chart-line"></i> Page Traffic Analytics
+            </div>
+            <div class="traffic-actions">
+                <button id="traffic-refreshBtn"><i class="fas fa-sync-alt"></i> Refresh</button>
+            </div>
+        </div> -->
+        
+        <div class="traffic-controls">
+            <div class="traffic-filter-section">
+                <div class="traffic-filter-title">Filter Data</div>
+                <select id="traffic-countryFilter" style="color: black;">
+                    <option value="">All Countries</option>
+                </select>
+                <select id="traffic-pageFilter" style="color: black;">
+                    <option value="">All Pages</option>
+                </select>
+                <button id="traffic-applyFilters">Apply Filters</button>
+            </div>
+            
+            <div class="traffic-date-filter">
+                <div class="traffic-filter-title">Date Range</div>
+                <input type="date" id="traffic-startDate">
+                <input type="date" id="traffic-endDate">
+                <button id="traffic-applyDateFilter">Apply</button>
+            </div>
+        </div>
+        
+        <div class="traffic-dashboard-cards">
+            <div class="traffic-card">
+                <div class="traffic-card-header">
+                    <div class="traffic-card-icon">
+                        <i class="fas fa-eye"></i>
+                    </div>
+                    <div>
+                        <h3 class="traffic-card-title">TOTAL VISITS</h3>
+                    </div>
+                </div>
+                <h2 class="traffic-card-value" id="traffic-totalVisits">--</h2>
+                <div class="traffic-card-trend" id="traffic-visitsTrend"></div>
+            </div>
+            
+            <div class="traffic-card">
+                <div class="traffic-card-header">
+                    <div class="traffic-card-icon">
+                        <i class="fas fa-file"></i>
+                    </div>
+                    <div>
+                        <h3 class="traffic-card-title">TOP PAGE</h3>
+                    </div>
+                </div>
+                <h2 class="traffic-card-value" id="traffic-topPage">--</h2>
+                <div class="traffic-card-trend" id="traffic-topPageVisits"></div>
+            </div>
+            
+            <div class="traffic-card">
+                <div class="traffic-card-header">
+                    <div class="traffic-card-icon">
+                        <i class="fas fa-globe"></i>
+                    </div>
+                    <div>
+                        <h3 class="traffic-card-title">TOP COUNTRY</h3>
+                    </div>
+                </div>
+                <h2 class="traffic-card-value" id="traffic-topCountry">--</h2>
+                <div class="traffic-card-trend" id="traffic-topCountryVisits"></div>
+            </div>
+            
+            <div class="traffic-card">
+                <div class="traffic-card-header">
+                    <div class="traffic-card-icon">
+                        <i class="fas fa-calendar-alt"></i>
+                    </div>
+                    <div>
+                        <h3 class="traffic-card-title">TODAY'S VISITS</h3>
+                    </div>
+                </div>
+                <h2 class="traffic-card-value" id="traffic-todayVisits">--</h2>
+                <div class="traffic-card-trend" id="traffic-todayVisitsTrend"></div>
+            </div>
+        </div>
+        
+        <div class="traffic-charts-container">
+            <div class="traffic-chart-card">
+                <div class="traffic-chart-title">Visits Over Time</div>
+                <canvas id="traffic-visitsChart"></canvas>
+            </div>
+            
+            <div class="traffic-chart-card">
+                <div class="traffic-chart-title">Top Pages</div>
+                <canvas id="traffic-pagesChart"></canvas>
+            </div>
+        </div>
+        
+        <div class="traffic-data-table">
+            <div class="traffic-table-header">
+                <div class="traffic-table-title">Detailed Traffic Data</div>
+                <div class="traffic-table-actions">
+                    <button id="traffic-exportBtn"><i class="fas fa-download"></i> Export</button>
+                </div>
+            </div>
+            
+            <table class="traffic-table">
+                <thead>
+                    <tr class="traffic-tr">
+                        <th class="traffic-th">Page</th>
+                        <th class="traffic-th">Visits</th>
+                        <th class="traffic-th">Country</th>
+                        <th class="traffic-th">State/Region</th>
+                        <th class="traffic-th">City</th>
+                        <th class="traffic-th">Date</th>
+                    </tr>
+                </thead>
+                <tbody id="traffic-statsTable">
+                    <!-- Data will be inserted here -->
+                </tbody>
+            </table>
+            
+            <div class="traffic-pagination" id="traffic-pagination">
+                <!-- Pagination controls -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Current state
+        let trafficCurrentData = [];
+        let trafficFilteredData = [];
+        let trafficCurrentPage = 1;
+        const trafficItemsPerPage = 10;
+    
+        // Initialize date filters with last 30 days
+        const trafficToday = new Date();
+        const trafficThirtyDaysAgo = new Date();
+        trafficThirtyDaysAgo.setDate(trafficToday.getDate() - 30);
+    
+        document.getElementById('traffic-startDate').valueAsDate = trafficThirtyDaysAgo;
+        document.getElementById('traffic-endDate').valueAsDate = trafficToday;
+    
+        // Charts
+        let trafficVisitsChart = null;
+        let trafficPagesChart = null;
+    
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', trafficInitDashboard);
+    
+        function trafficInitDashboard() {
+            // Set up event listeners
+            // document.getElementById('traffic-refreshBtn').addEventListener('click', trafficFetchStats);
+            document.getElementById('traffic-applyFilters').addEventListener('click', trafficApplyFilters);
+            document.getElementById('traffic-applyDateFilter').addEventListener('click', trafficFetchStats);
+            document.getElementById('traffic-exportBtn').addEventListener('click', trafficExportData);
+    
+            // Initialize
+            trafficFetchStats();
+        }
+    
+        async function trafficFetchStats() {
+            trafficShowLoading(true);
+    
+            try {
+                // Get date range
+                const startDate = document.getElementById('traffic-startDate').value;
+                const endDate = document.getElementById('traffic-endDate').value;
+    
+                // Build API URL with date parameters
+                let apiUrl = 'https://api.khcrf.org/api/stats';
+    
+                if (startDate && endDate) {
+                    apiUrl += `?start=${startDate}&end=${endDate}`;
+                }
+    
+                const response = await fetch(apiUrl, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                });
+    
+                if (!response.ok) {
+                    throw new Error(`Server responded with status: ${response.status}`);
+                }
+    
+                const data = await response.json();
+                trafficCurrentData = data;
+    
+                // Process data
+                trafficPopulateFilters(data);
+                trafficApplyFilters(); // This will update the table and charts
+                trafficUpdateSummaryCards(data);
+    
+            } catch (error) {
+                console.error('Error fetching stats:', error);
+                trafficShowError(`Failed to load data: ${error.message}`);
+            } finally {
+                trafficShowLoading(false);
+            }
+        }
+    
+        function trafficPopulateFilters(data) {
+            // Extract unique countries and pages for filters
+            const countries = [...new Set(data.map(item => item.country).filter(Boolean))];
+            const pages = [...new Set(data.map(item => item.filename))];
+    
+            // Populate country filter
+            const countryFilter = document.getElementById('traffic-countryFilter');
+            const currentCountry = countryFilter.value;
+    
+            // Clear current options except the first one
+            while (countryFilter.options.length > 1) {
+                countryFilter.remove(1);
+            }
+    
+            // Add new options
+            countries.forEach(country => {
+                const option = document.createElement('option');
+                option.value = country;
+                option.textContent = country;
+                countryFilter.appendChild(option);
+            });
+    
+            // Restore previous selection if possible
+            if (currentCountry && countries.includes(currentCountry)) {
+                countryFilter.value = currentCountry;
+            }
+    
+            // Populate page filter
+            const pageFilter = document.getElementById('traffic-pageFilter');
+            const currentPage = pageFilter.value;
+    
+            // Clear current options except the first one
+            while (pageFilter.options.length > 1) {
+                pageFilter.remove(1);
+            }
+    
+            // Add new options
+            pages.forEach(page => {
+                const option = document.createElement('option');
+                option.value = page;
+                option.textContent = page;
+                pageFilter.appendChild(option);
+            });
+    
+            // Restore previous selection if possible
+            if (currentPage && pages.includes(currentPage)) {
+                pageFilter.value = currentPage;
+            }
+        }
+    
+        function trafficApplyFilters() {
+            const countryFilter = document.getElementById('traffic-countryFilter').value;
+            const pageFilter = document.getElementById('traffic-pageFilter').value;
+    
+            // Apply filters
+            trafficFilteredData = trafficCurrentData.filter(item => {
+                if (countryFilter && item.country !== countryFilter) return false;
+                if (pageFilter && item.filename !== pageFilter) return false;
+                return true;
+            });
+    
+            // Reset pagination
+            trafficCurrentPage = 1;
+    
+            // Update UI
+            trafficUpdateTable();
+            trafficUpdateCharts();
+            trafficUpdatePagination();
+        }
+    
+        function trafficUpdateTable() {
+            const tableBody = document.getElementById('traffic-statsTable');
+            tableBody.innerHTML = '';
+    
+            // Calculate pagination
+            const startIndex = (trafficCurrentPage - 1) * trafficItemsPerPage;
+            const endIndex = startIndex + trafficItemsPerPage;
+            const currentPageData = trafficFilteredData.slice(startIndex, endIndex);
+    
+            if (currentPageData.length === 0) {
+                const row = document.createElement('tr');
+                row.innerHTML = `<td colspan="6" class="text-center">No data found</td>`;
+                tableBody.appendChild(row);
+                return;
+            }
+    
+            // Add rows
+            currentPageData.forEach(entry => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td class="traffic-td">${entry.filename}</td>
+                    <td class="traffic-td">${entry.visits}</td>
+                    <td class="traffic-td">${entry.country || 'N/A'}</td>
+                    <td class="traffic-td">${entry.region || 'N/A'}</td>
+                    <td class="traffic-td">${entry.city || 'N/A'}</td>
+                    <td class="traffic-td">${trafficFormatDate(entry.date)}</td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+    
+        function trafficUpdatePagination() {
+            const pagination = document.getElementById('traffic-pagination');
+            pagination.innerHTML = '';
+    
+            const totalPages = Math.ceil(trafficFilteredData.length / trafficItemsPerPage);
+    
+            if (totalPages <= 1) {
+                return;
+            }
+    
+            // Previous button
+            const prevBtn = document.createElement('button');
+            prevBtn.innerHTML = '&laquo;';
+            prevBtn.disabled = trafficCurrentPage === 1;
+            prevBtn.addEventListener('click', () => {
+                if (trafficCurrentPage > 1) {
+                    trafficCurrentPage--;
+                    trafficUpdateTable();
+                    trafficUpdatePagination();
+                }
+            });
+            pagination.appendChild(prevBtn);
+    
+            // Page buttons
+            const maxButtons = 5;
+            const startPage = Math.max(1, trafficCurrentPage - Math.floor(maxButtons / 2));
+            const endPage = Math.min(totalPages, startPage + maxButtons - 1);
+    
+            for (let i = startPage; i <= endPage; i++) {
+                const pageBtn = document.createElement('button');
+                pageBtn.textContent = i;
+                pageBtn.classList.toggle('active', i === trafficCurrentPage);
+                pageBtn.addEventListener('click', () => {
+                    trafficCurrentPage = i;
+                    trafficUpdateTable();
+                    trafficUpdatePagination();
+                });
+                pagination.appendChild(pageBtn);
+            }
+    
+            // Next button
+            const nextBtn = document.createElement('button');
+            nextBtn.innerHTML = '&raquo;';
+            nextBtn.disabled = trafficCurrentPage === totalPages;
+            nextBtn.addEventListener('click', () => {
+                if (trafficCurrentPage < totalPages) {
+                    trafficCurrentPage++;
+                    trafficUpdateTable();
+                    trafficUpdatePagination();
+                }
+            });
+            pagination.appendChild(nextBtn);
+        }
+    
+        function trafficUpdateCharts() {
+            // Create visits over time chart
+            trafficCreateVisitsTimeChart();
+    
+            // Create top pages chart
+            trafficCreateTopPagesChart();
+        }
+    
+        function trafficCreateVisitsTimeChart() {
+            // Group by date
+            const visitsMap = new Map();
+    
+            trafficFilteredData.forEach(entry => {
+                const date = entry.date.split('T')[0]; // Just get the date part
+                if (!visitsMap.has(date)) {
+                    visitsMap.set(date, 0);
+                }
+                visitsMap.set(date, visitsMap.get(date) + entry.visits);
+            });
+    
+            // Sort by date
+            const sortedDates = [...visitsMap.keys()].sort();
+            const chartData = {
+                labels: sortedDates.map(trafficFormatDate),
+                datasets: [{
+                    label: 'Visits',
+                    data: sortedDates.map(date => visitsMap.get(date)),
+                    borderColor: '#4a6baf',
+                    backgroundColor: 'rgba(74, 107, 175, 0.1)',
+                    fill: true,
+                    tension: 0.4
+                }]
+            };
+    
+            // Create or update chart
+            const ctx = document.getElementById('traffic-visitsChart').getContext('2d');
+    
+            if (trafficVisitsChart) {
+                trafficVisitsChart.data = chartData;
+                trafficVisitsChart.update();
+            } else {
+                trafficVisitsChart = new Chart(ctx, {
+                    type: 'line',
+                    data: chartData,
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                display: false
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return `Visits: ${context.raw}`;
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    precision: 0
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        }
+    
+        function trafficCreateTopPagesChart() {
+            // Group by page
+            const pagesMap = new Map();
+    
+            trafficFilteredData.forEach(entry => {
+                if (!pagesMap.has(entry.filename)) {
+                    pagesMap.set(entry.filename, 0);
+                }
+                pagesMap.set(entry.filename, pagesMap.get(entry.filename) + entry.visits);
+            });
+    
+            // Sort by visits (descending) and take top 5
+            const topPages = [...pagesMap.entries()]
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 5);
+    
+            const chartData = {
+                labels: topPages.map(([page]) => page),
+                datasets: [{
+                    label: 'Visits',
+                    data: topPages.map(([, visits]) => visits),
+                    backgroundColor: [
+                        '#4a6baf',
+                        '#6c757d',
+                        '#28a745',
+                        '#17a2b8',
+                        '#ffc107'
+                    ],
+                    borderWidth: 1
+                }]
+            };
+    
+            // Create or update chart
+            const ctx = document.getElementById('traffic-pagesChart').getContext('2d');
+    
+            if (trafficPagesChart) {
+                trafficPagesChart.data = chartData;
+                trafficPagesChart.update();
+            } else {
+                trafficPagesChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: chartData,
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                display: false
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return `Visits: ${context.raw}`;
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    precision: 0
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        }
+    
+        function trafficUpdateSummaryCards(data) {
+            // Total visits
+            const totalVisits = data.reduce((sum, entry) => sum + entry.visits, 0);
+            document.getElementById('traffic-totalVisits').textContent = totalVisits.toLocaleString();
+    
+            // Top page
+            const pagesMap = new Map();
+            data.forEach(entry => {
+                if (!pagesMap.has(entry.filename)) {
+                    pagesMap.set(entry.filename, 0);
+                }
+                pagesMap.set(entry.filename, pagesMap.get(entry.filename) + entry.visits);
+            });
+    
+            const topPage = [...pagesMap.entries()]
+                .sort((a, b) => b[1] - a[1])[0];
+    
+            if (topPage) {
+                document.getElementById('traffic-topPage').textContent = topPage[0];
+                document.getElementById('traffic-topPageVisits').textContent = `${topPage[1].toLocaleString()} visits`;
+            }
+    
+            // Top country
+            const countriesMap = new Map();
+            data.forEach(entry => {
+                if (!entry.country) return;
+    
+                if (!countriesMap.has(entry.country)) {
+                    countriesMap.set(entry.country, 0);
+                }
+                countriesMap.set(entry.country, countriesMap.get(entry.country) + entry.visits);
+            });
+    
+            const topCountry = [...countriesMap.entries()]
+                .sort((a, b) => b[1] - a[1])[0];
+    
+            if (topCountry) {
+                document.getElementById('traffic-topCountry').textContent = topCountry[0];
+                document.getElementById('traffic-topCountryVisits').textContent = `${topCountry[1].toLocaleString()} visits`;
+            }
+    
+            // Today's visits
+            const today = new Date().toISOString().split('T')[0];
+            const todayVisits = data
+                .filter(entry => entry.date.startsWith(today))
+                .reduce((sum, entry) => sum + entry.visits, 0);
+    
+            document.getElementById('traffic-todayVisits').textContent = todayVisits.toLocaleString();
+    
+            // Add trends
+            const yesterdayStr = new Date(Date.now() - 86400000).toISOString().split('T')[0];
+            const yesterdayVisits = data
+                .filter(entry => entry.date.startsWith(yesterdayStr))
+                .reduce((sum, entry) => sum + entry.visits, 0);
+    
+            if (yesterdayVisits > 0) {
+                const percentChange = ((todayVisits - yesterdayVisits) / yesterdayVisits * 100).toFixed(1);
+                const trend = document.getElementById('traffic-todayVisitsTrend');
+    
+                if (percentChange > 0) {
+                    trend.innerHTML = `<i class="fas fa-arrow-up"></i> ${percentChange}% vs yesterday`;
+                    trend.className = 'traffic-card-trend traffic-trend-up';
+                } else if (percentChange < 0) {
+                    trend.innerHTML = `<i class="fas fa-arrow-down"></i> ${Math.abs(percentChange)}% vs yesterday`;
+                    trend.className = 'traffic-card-trend traffic-trend-down';
+                } else {
+                    trend.innerHTML = `<i class="fas fa-equals"></i> Same as yesterday`;
+                    trend.className = 'traffic-card-trend';
+                }
+            }
+        }
+    
+        function trafficExportData() {
+            // Convert data to CSV
+            const headers = ['Page', 'Visits', 'Country', 'State/Region', 'City', 'Date'];
+    
+            const csvRows = [];
+            csvRows.push(headers.join(','));
+    
+            trafficFilteredData.forEach(entry => {
+                const row = [
+                    `"${entry.filename}"`,
+                    entry.visits,
+                    `"${entry.country || 'N/A'}"`,
+                    `"${entry.region || 'N/A'}"`,
+                    `"${entry.city || 'N/A'}"`,
+                    `"${trafficFormatDate(entry.date)}"`
+                ];
+                csvRows.push(row.join(','));
+            });
+    
+            const csvString = csvRows.join('\n');
+    
+            // Create download link
+            const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+    
+            const link = document.createElement('a');
+            link.setAttribute('href', url);
+            link.setAttribute('download', `page_traffic_${new Date().toISOString().slice(0, 10)}.csv`);
+            link.style.visibility = 'hidden';
+    
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+    
+        function trafficFormatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString();
+        }
+    
+        function trafficShowLoading(isLoading) {
+            const tableBody = document.getElementById('traffic-statsTable');
+    
+            if (isLoading) {
+                tableBody.innerHTML = `
+                    <tr class="traffic-tr">
+                        <td class="traffic-td" colspan="6">
+                            <div class="traffic-loading">
+                                <div class="traffic-loading-spinner"></div>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }
+        }
+    
+        function trafficShowError(message) {
+            const tableBody = document.getElementById('traffic-statsTable');
+    
+            tableBody.innerHTML = `
+                <tr class="traffic-tr">
+                    <td class="traffic-td" colspan="6">
+                        <div class="traffic-error-message">
+                            <i class="fas fa-exclamation-circle"></i> ${message}
+                        </div>
+                    </td>
+                </tr>
+            `;
+        }
+    </script>
+
+    <script>
+        // Function to format numbers with commas
+        const formatNumber = (num) => {
+            if (num === undefined || num === null) return '0'; // Handle undefined/null values
+            return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        };
+    
+        // Function to update stats
+        const updateStats = (data) => {
+            document.getElementById('totalUsers').textContent = formatNumber(data.totalUsers || 0);
+            document.getElementById('totalAdmins').textContent = formatNumber(data.totalAdmins || 0);
+            // document.getElementById('totalMembers').textContent = formatNumber(data.totalMembers || 0);
+            document.getElementById('totalDonors').textContent = formatNumber(data.totalDonors || 0);
+            document.getElementById('totalCollaborators').textContent = formatNumber(data.totalCollaborators || 0);
+            document.getElementById('totalEbookOrders').textContent = formatNumber(data.totalEbookOrders || 0);
+            document.getElementById('totalBusinessEvaluation').textContent = formatNumber(data.totalBusinessEvaluation || 0);
+            document.getElementById('totalCertificationOrders').textContent = formatNumber(data.totalCertificationOrders || 0);
+            document.getElementById('totalBadgesRequested').textContent = formatNumber(data.totalBadgesRequested || 0);
+            document.getElementById('totalPartners').textContent = formatNumber(data.totalPartners || 0);
+        };
+    
+        let userTypeChart = null;
+        // let membershipStatusChart = null;
+    
+        const createCharts = (data) => {
+            // Destroy existing charts if they exist
+            if (userTypeChart) {
+                userTypeChart.destroy();
+            }
+            // if (membershipStatusChart) {
+            //     membershipStatusChart.destroy();
+            // }
+    
+            // User Type Distribution Chart
+            const userTypeCtx = document.getElementById('userTypeChart').getContext('2d');
+            userTypeChart = new Chart(userTypeCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Admins', 'Donors', 'Collaborators'],
+                    datasets: [{
+                        label: 'User Distribution',
+                        data: [
+                            data.totalAdmins || 0,
+                            data.totalDonors || 0,
+                            data.totalCollaborators || 0
+                        ],
+                        backgroundColor: [
+                            '#3b82f6',
+                            '#f59e0b',
+                            '#8b5cf6'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'User Type Distribution',
+                            color: '#e5e7eb',
+                            font: { size: 16, weight: '600' }
+                        },
+                        legend: {
+                            labels: { color: '#9ca3af' }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: { color: '#374151' },
+                            ticks: { color: '#9ca3af' }
+                        },
+                        x: {
+                            grid: { display: false },
+                            ticks: { color: '#9ca3af' }
+                        }
+                    }
+                }
+            });
+    
+            // Membership Status Chart (Commented Out)
+            // const membershipCtx = document.getElementById('membershipStatusChart').getContext('2d');
+            // membershipStatusChart = new Chart(membershipCtx, {
+            //     type: 'doughnut',
+            //     data: {
+            //         labels: ['Pending', 'Approved', 'Rejected'],
+            //         datasets: [{
+            //             data: [
+            //                 data.pendingMembers || 0,
+            //                 data.approvedMembers || 0,
+            //                 data.rejectedMembers || 0
+            //             ],
+            //             backgroundColor: [
+            //                 '#f59e0b',
+            //                 '#10b981',
+            //                 '#ef4444'
+            //             ]
+            //         }]
+            //     },
+            //     options: {
+            //         responsive: true,
+            //         plugins: {
+            //             title: {
+            //                 display: true,
+            //                 text: 'Membership Status Distribution',
+            //                 color: '#e5e7eb',
+            //                 font: { size: 16, weight: '600' }
+            //             },
+            //             legend: {
+            //                 position: 'bottom',
+            //                 labels: { color: '#9ca3af' }
+            //             }
+            //         }
+            //     }
+            // });
+        };
+    
+        // Fetch and process data
+        const fetchData = async () => {
+            const token = localStorage.getItem('authToken'); // Retrieve token from localStorage
+            if (!token) {
+                console.log('You are not authenticated. Please log in.');
+                return;
+            }
+    
+            try {
+                const [
+                    usersResponse,
+                    // membershipsResponse,
+                    collaborationsResponse,
+                    donationsResponse,
+                    messagesResponse,
+                    preOrdersResponse,
+                    certificationsResponse,
+                    badgesResponse
+                ] = await Promise.all([
+                    fetch('https://api.khcrf.org/api/users', {
+                        headers: {
+                            'Authorization': `Bearer ${token}` // Include token in headers
+                        }
+                    }),
+                    // fetch('https://api.khcrf.org/api/form/all', {
+                    //     headers: {
+                    //         'Authorization': `Bearer ${token}` // Include token in headers
+                    //     }
+                    // }),
+                    fetch('https://api.khcrf.org/api/collaborations', {
+                        headers: {
+                            'Authorization': `Bearer ${token}` // Include token in headers
+                        }
+                    }),
+                    fetch('https://api.khcrf.org/api/donations/all', {
+                        headers: {
+                            'Authorization': `Bearer ${token}` // Include token in headers
+                        }
+                    }),
+                    fetch('https://api.khcrf.org/api/contact', {
+                        headers: {
+                            'Authorization': `Bearer ${token}` // Include token in headers
+                        }
+                    }),
+                    fetch('https://api.khcrf.org/api/pre-order/data', {
+                        headers: {
+                            'Authorization': `Bearer ${token}` // Include token in headers
+                        }
+                    }),
+                    fetch('https://api.khcrf.org/api/certifications', {
+                        headers: {
+                            'Authorization': `Bearer ${token}` // Include token in headers
+                        }
+                    }),
+                    fetch('https://api.khcrf.org/api/badge-application', {
+                        headers: {
+                            'Authorization': `Bearer ${token}` // Include token in headers
+                        }
+                    })
+                ]);
+    
+                // Check if responses are OK
+                if (!usersResponse.ok || !collaborationsResponse.ok || !donationsResponse.ok || !messagesResponse.ok || !preOrdersResponse.ok || !certificationsResponse.ok || !badgesResponse.ok) {
+                    throw new Error('Failed to fetch data from one or more endpoints');
+                }
+    
+                // Parse JSON responses
+                const users = await usersResponse.json();
+                // const memberships = await membershipsResponse.json();
+                const collaborations = await collaborationsResponse.json();
+                const donations = await donationsResponse.json();
+                const messages = await messagesResponse.json();
+                const preOrders = await preOrdersResponse.json();
+                const certifications = await certificationsResponse.json();
+                const badges = await badgesResponse.json();
+    
+                // Debug: Log API responses
+                console.log('Users:', users);
+                // console.log('Memberships:', memberships);
+                console.log('Collaborations:', collaborations);
+                console.log('Donations:', donations);
+                console.log('Messages:', messages);
+                console.log('Pre-Orders:', preOrders);
+                console.log('Certifications:', certifications);
+                console.log('Badges:', badges);
+    
+                // Process data
+                const data = {
+                    totalUsers: users.length || 0,
+                    totalAdmins: users.filter(user => user.isAdmin).length || 0,
+                    // totalMembers: memberships.length || 0,
+                    totalDonors: donations.data.length || 0,
+                    totalCollaborators: collaborations.length || 0,
+                    // pendingMembers: memberships.filter(m => m.status === 'pending').length || 0,
+                    // approvedMembers: memberships.filter(m => m.status === 'approved').length || 0,
+                    // rejectedMembers: memberships.filter(m => m.status === 'rejected').length || 0,
+                    totalEbookOrders: preOrders.length || 0, // Use pre-orders count for eBook orders
+                    totalBusinessEvaluation: 0, // Not implemented in backend
+                    totalCertificationOrders: certifications.length || 0,
+                    totalBadgesRequested: badges.applications.length || 0,
+                    totalPartners: 0 // Not implemented in backend
+                };
+    
+                // Debug: Log processed data
+                console.log('Processed Data:', data);
+    
+                // Update UI
+                updateStats(data);
+                createCharts(data);
+    
+                // Update notification count
+                updateNotificationCount(messages);
+            } catch (error) {
+                console.error('Error fetching data:', error);
+                console.log('Error loading dashboard data. Please check your authentication and try again.');
+            }
+        };
+    
+        // Update notification count
+        const updateNotificationCount = (messages) => {
+            const now = new Date();
+            const last24Hours = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+    
+            const recentMessages = messages.filter(msg => new Date(msg.date) >= last24Hours);
+            document.getElementById('notificationCount').textContent = recentMessages.length;
+        };
+    
+        // Open overlay to display messages
+        const openOverlay = async () => {
+            const token = localStorage.getItem('authToken');
+            if (!token) {
+                alert('You are not authenticated. Please log in.');
+                window.location.href = '/login';
+                return;
+            }
+    
+            try {
+                const response = await fetch('https://api.khcrf.org/api/contact', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+    
+                if (!response.ok) {
+                    throw new Error('Failed to fetch messages');
+                }
+    
+                const messages = await response.json();
+                const now = new Date();
+                const last24Hours = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+    
+                const recentMessages = messages.filter(msg => new Date(msg.date) >= last24Hours);
+    
+                const messagesList = document.getElementById('messages-list');
+                messagesList.innerHTML = `
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Message</th>
+                                <th>Email</th>
+                                <th>Phone</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${recentMessages.map(msg => `
+                                <tr>
+                                    <td>${msg.name}</td>
+                                    <td>${msg.message}</td>
+                                    <td><a href="mailto:${msg.email}">${msg.email}</a></td>
+                                    <td>${msg.mobileNumber || "Not provided"}</td>
+                                    <td>${new Date(msg.date).toLocaleString()}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `;
+    
+                document.getElementById('overlay').style.display = 'flex';
+            } catch (error) {
+                console.error('Error fetching messages:', error);
+                alert('Error loading messages. Please try again.');
+            }
+        };
+    
+        // Close overlay
+        const closeOverlay = () => {
+            document.getElementById('overlay').style.display = 'none';
+        };
+    
+        // Refresh dashboard
+        const refreshDashboard = () => {
+            fetchData();
+        };
+    
+        // Initial load
+        fetchData();
+    
+        // Refresh data every 5 minutes
+        setInterval(fetchData, 300000);
+    </script>
+
+<script>
+    // Get references to the menu toggle and nav links
+    const menuToggle = document.getElementById('menuToggle');
+    const navLinks = document.getElementById('navLinks');
+
+    // Add click event listener to the menu toggle
+    menuToggle.addEventListener('click', () => {
+        // Toggle the 'active' class on the nav links
+        navLinks.classList.toggle('active');
+        // Toggle the 'active' class on the menu toggle for the animation
+        menuToggle.classList.toggle('active');
+    });
+</script>
+    
+</body>
+</html>

@@ -1,0 +1,52 @@
+<!-- index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Date-Based Counter</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin-top: 50px;
+        }
+        #counter {
+            font-size: 40px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Date-Based Counter</h1>
+    <p id="counter">Loading...</p>
+
+    <script>
+        const initialValue = 12000;
+        const incrementPerDay = 300;
+        const maxLimit = 20000;
+
+        // Set the fixed start date (YYYY, MM (0-based), DD)
+        const startDate = new Date(2025, 1, 2); // 4th February 2025 (Month is 0-based, so 1 = Feb)
+        const today = new Date();
+
+        // Calculate how many full days have passed
+        const timeDifference = today - startDate;
+        const daysPassed = Math.floor(timeDifference / (1000 * 60 * 60 * 24));
+
+        // Calculate the updated counter value
+        let newValue = initialValue + (daysPassed * incrementPerDay);
+
+        // Ensure it does not exceed the maximum limit
+        if (newValue > maxLimit) {
+            newValue = maxLimit;
+        }
+
+        // Display the counter
+        document.getElementById("counter").textContent = newValue;
+    </script>
+
+</body>
+</html>

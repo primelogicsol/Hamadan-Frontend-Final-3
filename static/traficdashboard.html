@@ -1,0 +1,1492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Page Traffic Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+   <style>
+    /* Base Styles & Variables */
+:root {
+    --primary: #6d28d9;
+    --primary-light: #8b5cf6;
+    --primary-dark: #5b21b6;
+    --secondary: #10b981;
+    --dark-bg: #0f172a;
+    --darker-bg: #0a0f1c;
+    --card-bg: #1e293b;
+    --text-color: #f1f5f9;
+    --text-muted: #94a3b8;
+    --border-color: rgba(255, 255, 255, 0.06);
+    --transition-speed: 0.3s;
+    --glow-color: rgba(109, 40, 217, 0.5);
+    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.4);
+    --shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.5);
+    --gradient-primary: linear-gradient(135deg, var(--primary), var(--primary-light));
+    --gradient-secondary: linear-gradient(135deg, var(--secondary), #06d6a0);
+    --border-radius: 12px;
+    --border-radius-sm: 8px;
+    --font-main: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+}
+
+/* Global Styles */
+body {
+    margin: 0;
+    padding: 0;
+    font-family: var(--font-main);
+    background: var(--darker-bg);
+    color: var(--text-color);
+    line-height: 1.5;
+    overflow-x: hidden;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--dark-bg);
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--primary-dark);
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--primary);
+}
+
+/* Dashboard Container */
+.traffic-dashboard-container {
+    width: 100%;
+    max-width: 1600px;
+    margin: 0 auto;
+    padding: 24px;
+    background: var(--dark-bg);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+/* Dashboard Header */
+.traffic-dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.traffic-dashboard-title {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--text-color);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.traffic-dashboard-title i {
+    color: var(--primary-light);
+    font-size: 24px;
+}
+
+.traffic-actions {
+    display: flex;
+    gap: 12px;
+}
+
+/* Buttons */
+button {
+    background: var(--primary);
+    color: white;
+    border: none;
+    padding: 10px 16px;
+    border-radius: var(--border-radius-sm);
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all var(--transition-speed);
+    font-size: 14px;
+    box-shadow: var(--shadow-sm);
+}
+
+button:hover {
+    background: var(--primary-light);
+    box-shadow: 0 0 12px var(--glow-color);
+    transform: translateY(-2px);
+}
+
+button:active {
+    transform: translateY(0);
+}
+
+button i {
+    font-size: 14px;
+}
+
+#traffic-refreshBtn {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+}
+
+#traffic-refreshBtn:hover {
+    background: var(--dark-bg);
+}
+
+#traffic-applyFilters, #traffic-applyDateFilter {
+    background: var(--secondary);
+}
+
+#traffic-applyFilters:hover, #traffic-applyDateFilter:hover {
+    background: #0ca875;
+    box-shadow: 0 0 12px rgba(16, 185, 129, 0.5);
+}
+
+#traffic-exportBtn {
+    background: transparent;
+    border: 1px solid var(--border-color);
+    color: var(--text-color);
+}
+
+#traffic-exportBtn:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+/* Controls Section */
+.traffic-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 24px;
+    padding: 20px;
+    background: var(--card-bg);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-md);
+    justify-content: space-between;
+    position: relative;
+    overflow: hidden;
+}
+
+.traffic-controls::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background: var(--gradient-primary);
+}
+
+.traffic-filter-section, .traffic-date-filter {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+}
+
+.traffic-filter-title {
+    font-weight: 600;
+    color: var(--text-color);
+    font-size: 14px;
+    margin-right: 4px;
+}
+
+/* Select & Input Styling */
+select, input[type="date"] {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border-color);
+    color: var(--text-color);
+    padding: 10px 14px;
+    border-radius: var(--border-radius-sm);
+    font-size: 14px;
+    font-family: var(--font-main);
+    transition: all var(--transition-speed);
+    min-width: 150px;
+    appearance: none;
+    cursor: pointer;
+}
+
+select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    padding-right: 30px;
+}
+
+select:focus, input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(109, 40, 217, 0.2);
+}
+
+/* Dashboard Cards */
+.traffic-dashboard-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 24px;
+}
+
+.traffic-card {
+    background: var(--card-bg);
+    border-radius: var(--border-radius);
+    padding: 24px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: var(--shadow-md);
+    transition: all var(--transition-speed);
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.traffic-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-lg);
+}
+
+.traffic-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background: var(--gradient-primary);
+    opacity: 0.8;
+    transition: height var(--transition-speed);
+}
+
+.traffic-card:nth-child(2n)::before {
+    background: var(--gradient-secondary);
+}
+
+.traffic-card:hover::before {
+    height: 5px;
+}
+
+.traffic-card-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.traffic-card-icon {
+    width: 44px;
+    height: 44px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.traffic-card-icon i {
+    font-size: 18px;
+    color: var(--primary-light);
+}
+
+.traffic-card-title {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+.traffic-card-value {
+    margin: 10px 0 0;
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--text-color);
+}
+
+.traffic-card-trend {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.traffic-trend-up {
+    color: var(--secondary);
+}
+
+.traffic-trend-down {
+    color: #ef4444;
+}
+
+/* Charts Container */
+.traffic-charts-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 24px;
+}
+
+.traffic-chart-card {
+    background: var(--card-bg);
+    border-radius: var(--border-radius);
+    padding: 24px;
+    box-shadow: var(--shadow-md);
+    height: 400px;
+    display: flex;
+    flex-direction: column;
+}
+
+.traffic-chart-title {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 20px;
+    color: var(--text-color);
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+canvas {
+    flex: 1;
+    width: 100% !important;
+    max-height: 320px !important;
+}
+
+/* Data Table */
+.traffic-data-table {
+    background: var(--card-bg);
+    border-radius: var(--border-radius);
+    overflow: hidden;
+    box-shadow: var(--shadow-md);
+}
+
+.traffic-table-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.traffic-table-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-color);
+}
+
+.traffic-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.traffic-th {
+    text-align: left;
+    padding: 16px 24px;
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--text-muted);
+    border-bottom: 1px solid var(--border-color);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.traffic-td {
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--border-color);
+    font-size: 14px;
+    color: var(--text-color);
+    transition: all var(--transition-speed);
+}
+
+.traffic-tr:hover .traffic-td {
+    background: rgba(255, 255, 255, 0.03);
+}
+
+/* Pagination */
+.traffic-pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    padding: 20px;
+}
+
+.traffic-pagination button {
+    min-width: 40px;
+    height: 40px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: transparent;
+    color: var(--text-muted);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 0;
+    font-size: 14px;
+    box-shadow: none;
+}
+
+.traffic-pagination button:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--primary-light);
+    transform: none;
+    box-shadow: none;
+}
+
+.traffic-pagination button.active {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+}
+
+.traffic-pagination button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Loading & Error States */
+.traffic-loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 40px;
+}
+
+.traffic-loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid rgba(138, 75, 255, 0.2);
+    border-radius: 50%;
+    border-top: 3px solid var(--primary);
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.traffic-error-message {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    color: #ef4444;
+    padding: 20px;
+    font-weight: 500;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 992px) {
+    .traffic-controls {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .traffic-filter-section, .traffic-date-filter {
+        width: 100%;
+    }
+    
+    .traffic-charts-container {
+        grid-template-columns: 1fr;
+    }
+    
+    .traffic-chart-card {
+        height: 350px;
+    }
+}
+
+@media (max-width: 768px) {
+    .traffic-dashboard-cards {
+        grid-template-columns: 1fr;
+    }
+    
+    .traffic-dashboard-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+    }
+    
+    .traffic-actions {
+        width: 100%;
+    }
+    
+    .traffic-table-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+    
+    .traffic-table-actions {
+        width: 100%;
+    }
+    
+    .traffic-th, .traffic-td {
+        padding: 12px 16px;
+    }
+    
+    .traffic-pagination {
+        flex-wrap: wrap;
+    }
+}
+
+/* Responsive table */
+@media (max-width: 640px) {
+    .traffic-table {
+        display: block;
+    }
+    
+    .traffic-table thead, .traffic-table tbody, .traffic-table tr {
+        display: block;
+        width: 100%;
+    }
+    
+    .traffic-table thead tr {
+        position: absolute;
+        top: -9999px;
+        left: -9999px;
+    }
+    
+    .traffic-table tr {
+        border-bottom: 1px solid var(--border-color);
+        margin-bottom: 12px;
+        padding: 8px 0;
+    }
+    
+    .traffic-table td {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border: none;
+        position: relative;
+        padding: 10px 16px;
+        text-align: right;
+    }
+    
+    .traffic-table td::before {
+        content: attr(data-label);
+        position: absolute;
+        left: 16px;
+        width: 45%;
+        padding-right: 10px;
+        text-align: left;
+        font-weight: 600;
+        color: var(--text-muted);
+    }
+}
+
+/* Animations */
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+.traffic-card-value {
+    animation: pulse 2s ease-in-out infinite;
+}
+
+/* Glowing effect for cards */
+.traffic-card::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, var(--glow-color) 0%, transparent 70%);
+    opacity: 0;
+    transition: opacity var(--transition-speed);
+    pointer-events: none;
+    z-index: -1;
+}
+
+.traffic-card:hover::after {
+    opacity: 0.1;
+}
+
+/* Custom selection */
+::selection {
+    background: var(--primary);
+    color: white;
+}
+
+/* Card tooltip */
+.traffic-card {
+    position: relative;
+}
+
+.traffic-card:hover .traffic-card-tooltip {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.traffic-card-tooltip {
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%) translateY(10px);
+    background: var(--dark-bg);
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-color);
+    box-shadow: var(--shadow-sm);
+    white-space: nowrap;
+    opacity: 0;
+    transition: all var(--transition-speed);
+    pointer-events: none;
+    z-index: 10;
+}
+
+.traffic-card-tooltip::before {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border-width: 5px;
+    border-style: solid;
+    border-color: var(--dark-bg) transparent transparent transparent;
+}
+
+/* Focus styles */
+button:focus, select:focus, input:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(109, 40, 217, 0.3);
+}
+
+/* Glass morphism effect */
+.traffic-controls {
+    backdrop-filter: blur(12px);
+    background: rgba(30, 41, 59, 0.8);
+}
+
+/* Transition for chart hover */
+.traffic-chart-card {
+    transition: transform var(--transition-speed);
+}
+
+.traffic-chart-card:hover {
+    transform: translateY(-5px);
+}
+
+/* Dark mode toggle */
+.traffic-theme-toggle {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: var(--primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: var(--shadow-md);
+    z-index: 1000;
+    transition: all var(--transition-speed);
+}
+
+.traffic-theme-toggle:hover {
+    transform: scale(1.1);
+    box-shadow: 0 0 20px var(--glow-color);
+}
+
+.traffic-theme-toggle i {
+    font-size: 20px;
+    color: white;
+}
+
+/* Notification badge */
+.traffic-notification-badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--secondary);
+    color: white;
+    font-size: 10px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Tooltip for filter options */
+.traffic-filter-help {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    font-size: 10px;
+    text-align: center;
+    line-height: 16px;
+    margin-left: 5px;
+    cursor: help;
+    position: relative;
+}
+
+.traffic-filter-help::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%) translateY(-5px);
+    background: var(--dark-bg);
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-size: 12px;
+    width: 200px;
+    color: var(--text-color);
+    box-shadow: var(--shadow-sm);
+    opacity: 0;
+    visibility: hidden;
+    transition: all var(--transition-speed);
+    z-index: 100;
+}
+
+.traffic-filter-help:hover::after {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(-10px);
+}
+
+/* Table sorting indicators */
+.traffic-th.sortable {
+    cursor: pointer;
+    position: relative;
+}
+
+.traffic-th.sortable::after {
+    content: '⇅';
+    position: absolute;
+    right: 10px;
+    opacity: 0.5;
+    font-size: 14px;
+}
+
+.traffic-th.sortable.asc::after {
+    content: '↑';
+    opacity: 1;
+}
+
+.traffic-th.sortable.desc::after {
+    content: '↓';
+    opacity: 1;
+}
+
+/* No data indicator */
+.traffic-no-data {
+    text-align: center;
+    padding: 60px 0;
+    color: var(--text-muted);
+}
+
+.traffic-no-data i {
+    font-size: 48px;
+    margin-bottom: 16px;
+    opacity: 0.5;
+}
+
+.traffic-no-data p {
+    font-size: 16px;
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+/* Print styles */
+@media print {
+    .traffic-dashboard-container {
+        background: white;
+        color: black;
+        padding: 0;
+    }
+    
+    .traffic-actions,
+    .traffic-controls,
+    .traffic-pagination,
+    .traffic-theme-toggle {
+        display: none !important;
+    }
+    
+    .traffic-card,
+    .traffic-chart-card,
+    .traffic-data-table {
+        background: white;
+        box-shadow: none;
+        break-inside: avoid;
+    }
+    
+    .traffic-card::before,
+    .traffic-card::after {
+        display: none;
+    }
+    
+    .traffic-th,
+    .traffic-td {
+        color: black;
+        border-color: #ddd;
+    }
+    
+    .traffic-dashboard-header {
+        border-color: #ddd;
+    }
+}
+   </style>
+</head>
+<body>
+    <div class="traffic-dashboard-container">
+        <div class="traffic-dashboard-header">
+            <div class="traffic-dashboard-title">
+                <i class="fas fa-chart-line"></i> Page Traffic Analytics
+            </div>
+            <div class="traffic-actions">
+                <button id="traffic-refreshBtn"><i class="fas fa-sync-alt"></i> Refresh</button>
+            </div>
+        </div>
+        
+        <div class="traffic-controls">
+            <div class="traffic-filter-section">
+                <div class="traffic-filter-title">Filter Data</div>
+                <select id="traffic-countryFilter" style="color: black;">
+                    <option value="">All Countries</option>
+                </select>
+                <select id="traffic-pageFilter" style="color: black;">
+                    <option value="">All Pages</option>
+                </select>
+                <button id="traffic-applyFilters">Apply Filters</button>
+            </div>
+            
+            <div class="traffic-date-filter">
+                <div class="traffic-filter-title">Date Range</div>
+                <input type="date" id="traffic-startDate">
+                <input type="date" id="traffic-endDate">
+                <button id="traffic-applyDateFilter">Apply</button>
+            </div>
+        </div>
+        
+        <div class="traffic-dashboard-cards">
+            <div class="traffic-card">
+                <div class="traffic-card-header">
+                    <div class="traffic-card-icon">
+                        <i class="fas fa-eye"></i>
+                    </div>
+                    <div>
+                        <h3 class="traffic-card-title">TOTAL VISITS</h3>
+                    </div>
+                </div>
+                <h2 class="traffic-card-value" id="traffic-totalVisits">--</h2>
+                <div class="traffic-card-trend" id="traffic-visitsTrend"></div>
+            </div>
+            
+            <div class="traffic-card">
+                <div class="traffic-card-header">
+                    <div class="traffic-card-icon">
+                        <i class="fas fa-file"></i>
+                    </div>
+                    <div>
+                        <h3 class="traffic-card-title">TOP PAGE</h3>
+                    </div>
+                </div>
+                <h2 class="traffic-card-value" id="traffic-topPage">--</h2>
+                <div class="traffic-card-trend" id="traffic-topPageVisits"></div>
+            </div>
+            
+            <div class="traffic-card">
+                <div class="traffic-card-header">
+                    <div class="traffic-card-icon">
+                        <i class="fas fa-globe"></i>
+                    </div>
+                    <div>
+                        <h3 class="traffic-card-title">TOP COUNTRY</h3>
+                    </div>
+                </div>
+                <h2 class="traffic-card-value" id="traffic-topCountry">--</h2>
+                <div class="traffic-card-trend" id="traffic-topCountryVisits"></div>
+            </div>
+            
+            <div class="traffic-card">
+                <div class="traffic-card-header">
+                    <div class="traffic-card-icon">
+                        <i class="fas fa-calendar-alt"></i>
+                    </div>
+                    <div>
+                        <h3 class="traffic-card-title">TODAY'S VISITS</h3>
+                    </div>
+                </div>
+                <h2 class="traffic-card-value" id="traffic-todayVisits">--</h2>
+                <div class="traffic-card-trend" id="traffic-todayVisitsTrend"></div>
+            </div>
+        </div>
+        
+        <div class="traffic-charts-container">
+            <div class="traffic-chart-card">
+                <div class="traffic-chart-title">Visits Over Time</div>
+                <canvas id="traffic-visitsChart"></canvas>
+            </div>
+            
+            <div class="traffic-chart-card">
+                <div class="traffic-chart-title">Top Pages</div>
+                <canvas id="traffic-pagesChart"></canvas>
+            </div>
+        </div>
+        
+        <div class="traffic-data-table">
+            <div class="traffic-table-header">
+                <div class="traffic-table-title">Detailed Traffic Data</div>
+                <div class="traffic-table-actions">
+                    <button id="traffic-exportBtn"><i class="fas fa-download"></i> Export</button>
+                </div>
+            </div>
+            
+            <table class="traffic-table">
+                <thead>
+                    <tr class="traffic-tr">
+                        <th class="traffic-th">Page</th>
+                        <th class="traffic-th">Visits</th>
+                        <th class="traffic-th">Country</th>
+                        <th class="traffic-th">State/Region</th>
+                        <th class="traffic-th">City</th>
+                        <th class="traffic-th">Date</th>
+                    </tr>
+                </thead>
+                <tbody id="traffic-statsTable">
+                    <!-- Data will be inserted here -->
+                </tbody>
+            </table>
+            
+            <div class="traffic-pagination" id="traffic-pagination">
+                <!-- Pagination controls -->
+            </div>
+        </div>
+    </div>
+    <script>
+        // Current state
+        let trafficCurrentData = [];
+        let trafficFilteredData = [];
+        let trafficCurrentPage = 1;
+        const trafficItemsPerPage = 10;
+    
+        // Initialize date filters with last 30 days
+        const trafficToday = new Date();
+        const trafficThirtyDaysAgo = new Date();
+        trafficThirtyDaysAgo.setDate(trafficToday.getDate() - 30);
+    
+        document.getElementById('traffic-startDate').valueAsDate = trafficThirtyDaysAgo;
+        document.getElementById('traffic-endDate').valueAsDate = trafficToday;
+    
+        // Charts
+        let trafficVisitsChart = null;
+        let trafficPagesChart = null;
+    
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', trafficInitDashboard);
+    
+        function trafficInitDashboard() {
+            // Set up event listeners
+            document.getElementById('traffic-refreshBtn').addEventListener('click', trafficFetchStats);
+            document.getElementById('traffic-applyFilters').addEventListener('click', trafficApplyFilters);
+            document.getElementById('traffic-applyDateFilter').addEventListener('click', trafficFetchStats);
+            document.getElementById('traffic-exportBtn').addEventListener('click', trafficExportData);
+    
+            // Initialize
+            trafficFetchStats();
+        }
+    
+        async function trafficFetchStats() {
+            trafficShowLoading(true);
+    
+            try {
+                // Get date range
+                const startDate = document.getElementById('traffic-startDate').value;
+                const endDate = document.getElementById('traffic-endDate').value;
+    
+                // Build API URL with date parameters
+                let apiUrl = 'https://api.khcrf.org/api/stats';
+    
+                if (startDate && endDate) {
+                    apiUrl += `?start=${startDate}&end=${endDate}`;
+                }
+    
+                const response = await fetch(apiUrl, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                });
+    
+                if (!response.ok) {
+                    throw new Error(`Server responded with status: ${response.status}`);
+                }
+    
+                const data = await response.json();
+                trafficCurrentData = data;
+    
+                // Process data
+                trafficPopulateFilters(data);
+                trafficApplyFilters(); // This will update the table and charts
+                trafficUpdateSummaryCards(data);
+    
+            } catch (error) {
+                console.error('Error fetching stats:', error);
+                trafficShowError(`Failed to load data: ${error.message}`);
+            } finally {
+                trafficShowLoading(false);
+            }
+        }
+    
+        function trafficPopulateFilters(data) {
+            // Extract unique countries and pages for filters
+            const countries = [...new Set(data.map(item => item.country).filter(Boolean))];
+            const pages = [...new Set(data.map(item => item.filename))];
+    
+            // Populate country filter
+            const countryFilter = document.getElementById('traffic-countryFilter');
+            const currentCountry = countryFilter.value;
+    
+            // Clear current options except the first one
+            while (countryFilter.options.length > 1) {
+                countryFilter.remove(1);
+            }
+    
+            // Add new options
+            countries.forEach(country => {
+                const option = document.createElement('option');
+                option.value = country;
+                option.textContent = country;
+                countryFilter.appendChild(option);
+            });
+    
+            // Restore previous selection if possible
+            if (currentCountry && countries.includes(currentCountry)) {
+                countryFilter.value = currentCountry;
+            }
+    
+            // Populate page filter
+            const pageFilter = document.getElementById('traffic-pageFilter');
+            const currentPage = pageFilter.value;
+    
+            // Clear current options except the first one
+            while (pageFilter.options.length > 1) {
+                pageFilter.remove(1);
+            }
+    
+            // Add new options
+            pages.forEach(page => {
+                const option = document.createElement('option');
+                option.value = page;
+                option.textContent = page;
+                pageFilter.appendChild(option);
+            });
+    
+            // Restore previous selection if possible
+            if (currentPage && pages.includes(currentPage)) {
+                pageFilter.value = currentPage;
+            }
+        }
+    
+        function trafficApplyFilters() {
+            const countryFilter = document.getElementById('traffic-countryFilter').value;
+            const pageFilter = document.getElementById('traffic-pageFilter').value;
+    
+            // Apply filters
+            trafficFilteredData = trafficCurrentData.filter(item => {
+                if (countryFilter && item.country !== countryFilter) return false;
+                if (pageFilter && item.filename !== pageFilter) return false;
+                return true;
+            });
+    
+            // Reset pagination
+            trafficCurrentPage = 1;
+    
+            // Update UI
+            trafficUpdateTable();
+            trafficUpdateCharts();
+            trafficUpdatePagination();
+        }
+    
+        function trafficUpdateTable() {
+            const tableBody = document.getElementById('traffic-statsTable');
+            tableBody.innerHTML = '';
+    
+            // Calculate pagination
+            const startIndex = (trafficCurrentPage - 1) * trafficItemsPerPage;
+            const endIndex = startIndex + trafficItemsPerPage;
+            const currentPageData = trafficFilteredData.slice(startIndex, endIndex);
+    
+            if (currentPageData.length === 0) {
+                const row = document.createElement('tr');
+                row.innerHTML = `<td colspan="6" class="text-center">No data found</td>`;
+                tableBody.appendChild(row);
+                return;
+            }
+    
+            // Add rows
+            currentPageData.forEach(entry => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td class="traffic-td">${entry.filename}</td>
+                    <td class="traffic-td">${entry.visits}</td>
+                    <td class="traffic-td">${entry.country || 'N/A'}</td>
+                    <td class="traffic-td">${entry.region || 'N/A'}</td>
+                    <td class="traffic-td">${entry.city || 'N/A'}</td>
+                    <td class="traffic-td">${trafficFormatDate(entry.date)}</td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+    
+        function trafficUpdatePagination() {
+            const pagination = document.getElementById('traffic-pagination');
+            pagination.innerHTML = '';
+    
+            const totalPages = Math.ceil(trafficFilteredData.length / trafficItemsPerPage);
+    
+            if (totalPages <= 1) {
+                return;
+            }
+    
+            // Previous button
+            const prevBtn = document.createElement('button');
+            prevBtn.innerHTML = '&laquo;';
+            prevBtn.disabled = trafficCurrentPage === 1;
+            prevBtn.addEventListener('click', () => {
+                if (trafficCurrentPage > 1) {
+                    trafficCurrentPage--;
+                    trafficUpdateTable();
+                    trafficUpdatePagination();
+                }
+            });
+            pagination.appendChild(prevBtn);
+    
+            // Page buttons
+            const maxButtons = 5;
+            const startPage = Math.max(1, trafficCurrentPage - Math.floor(maxButtons / 2));
+            const endPage = Math.min(totalPages, startPage + maxButtons - 1);
+    
+            for (let i = startPage; i <= endPage; i++) {
+                const pageBtn = document.createElement('button');
+                pageBtn.textContent = i;
+                pageBtn.classList.toggle('active', i === trafficCurrentPage);
+                pageBtn.addEventListener('click', () => {
+                    trafficCurrentPage = i;
+                    trafficUpdateTable();
+                    trafficUpdatePagination();
+                });
+                pagination.appendChild(pageBtn);
+            }
+    
+            // Next button
+            const nextBtn = document.createElement('button');
+            nextBtn.innerHTML = '&raquo;';
+            nextBtn.disabled = trafficCurrentPage === totalPages;
+            nextBtn.addEventListener('click', () => {
+                if (trafficCurrentPage < totalPages) {
+                    trafficCurrentPage++;
+                    trafficUpdateTable();
+                    trafficUpdatePagination();
+                }
+            });
+            pagination.appendChild(nextBtn);
+        }
+    
+        function trafficUpdateCharts() {
+            // Create visits over time chart
+            trafficCreateVisitsTimeChart();
+    
+            // Create top pages chart
+            trafficCreateTopPagesChart();
+        }
+    
+        function trafficCreateVisitsTimeChart() {
+            // Group by date
+            const visitsMap = new Map();
+    
+            trafficFilteredData.forEach(entry => {
+                const date = entry.date.split('T')[0]; // Just get the date part
+                if (!visitsMap.has(date)) {
+                    visitsMap.set(date, 0);
+                }
+                visitsMap.set(date, visitsMap.get(date) + entry.visits);
+            });
+    
+            // Sort by date
+            const sortedDates = [...visitsMap.keys()].sort();
+            const chartData = {
+                labels: sortedDates.map(trafficFormatDate),
+                datasets: [{
+                    label: 'Visits',
+                    data: sortedDates.map(date => visitsMap.get(date)),
+                    borderColor: '#4a6baf',
+                    backgroundColor: 'rgba(74, 107, 175, 0.1)',
+                    fill: true,
+                    tension: 0.4
+                }]
+            };
+    
+            // Create or update chart
+            const ctx = document.getElementById('traffic-visitsChart').getContext('2d');
+    
+            if (trafficVisitsChart) {
+                trafficVisitsChart.data = chartData;
+                trafficVisitsChart.update();
+            } else {
+                trafficVisitsChart = new Chart(ctx, {
+                    type: 'line',
+                    data: chartData,
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                display: false
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return `Visits: ${context.raw}`;
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    precision: 0
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        }
+    
+        function trafficCreateTopPagesChart() {
+            // Group by page
+            const pagesMap = new Map();
+    
+            trafficFilteredData.forEach(entry => {
+                if (!pagesMap.has(entry.filename)) {
+                    pagesMap.set(entry.filename, 0);
+                }
+                pagesMap.set(entry.filename, pagesMap.get(entry.filename) + entry.visits);
+            });
+    
+            // Sort by visits (descending) and take top 5
+            const topPages = [...pagesMap.entries()]
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 5);
+    
+            const chartData = {
+                labels: topPages.map(([page]) => page),
+                datasets: [{
+                    label: 'Visits',
+                    data: topPages.map(([, visits]) => visits),
+                    backgroundColor: [
+                        '#4a6baf',
+                        '#6c757d',
+                        '#28a745',
+                        '#17a2b8',
+                        '#ffc107'
+                    ],
+                    borderWidth: 1
+                }]
+            };
+    
+            // Create or update chart
+            const ctx = document.getElementById('traffic-pagesChart').getContext('2d');
+    
+            if (trafficPagesChart) {
+                trafficPagesChart.data = chartData;
+                trafficPagesChart.update();
+            } else {
+                trafficPagesChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: chartData,
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                display: false
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return `Visits: ${context.raw}`;
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    precision: 0
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        }
+    
+        function trafficUpdateSummaryCards(data) {
+            // Total visits
+            const totalVisits = data.reduce((sum, entry) => sum + entry.visits, 0);
+            document.getElementById('traffic-totalVisits').textContent = totalVisits.toLocaleString();
+    
+            // Top page
+            const pagesMap = new Map();
+            data.forEach(entry => {
+                if (!pagesMap.has(entry.filename)) {
+                    pagesMap.set(entry.filename, 0);
+                }
+                pagesMap.set(entry.filename, pagesMap.get(entry.filename) + entry.visits);
+            });
+    
+            const topPage = [...pagesMap.entries()]
+                .sort((a, b) => b[1] - a[1])[0];
+    
+            if (topPage) {
+                document.getElementById('traffic-topPage').textContent = topPage[0];
+                document.getElementById('traffic-topPageVisits').textContent = `${topPage[1].toLocaleString()} visits`;
+            }
+    
+            // Top country
+            const countriesMap = new Map();
+            data.forEach(entry => {
+                if (!entry.country) return;
+    
+                if (!countriesMap.has(entry.country)) {
+                    countriesMap.set(entry.country, 0);
+                }
+                countriesMap.set(entry.country, countriesMap.get(entry.country) + entry.visits);
+            });
+    
+            const topCountry = [...countriesMap.entries()]
+                .sort((a, b) => b[1] - a[1])[0];
+    
+            if (topCountry) {
+                document.getElementById('traffic-topCountry').textContent = topCountry[0];
+                document.getElementById('traffic-topCountryVisits').textContent = `${topCountry[1].toLocaleString()} visits`;
+            }
+    
+            // Today's visits
+            const today = new Date().toISOString().split('T')[0];
+            const todayVisits = data
+                .filter(entry => entry.date.startsWith(today))
+                .reduce((sum, entry) => sum + entry.visits, 0);
+    
+            document.getElementById('traffic-todayVisits').textContent = todayVisits.toLocaleString();
+    
+            // Add trends
+            const yesterdayStr = new Date(Date.now() - 86400000).toISOString().split('T')[0];
+            const yesterdayVisits = data
+                .filter(entry => entry.date.startsWith(yesterdayStr))
+                .reduce((sum, entry) => sum + entry.visits, 0);
+    
+            if (yesterdayVisits > 0) {
+                const percentChange = ((todayVisits - yesterdayVisits) / yesterdayVisits * 100).toFixed(1);
+                const trend = document.getElementById('traffic-todayVisitsTrend');
+    
+                if (percentChange > 0) {
+                    trend.innerHTML = `<i class="fas fa-arrow-up"></i> ${percentChange}% vs yesterday`;
+                    trend.className = 'traffic-card-trend traffic-trend-up';
+                } else if (percentChange < 0) {
+                    trend.innerHTML = `<i class="fas fa-arrow-down"></i> ${Math.abs(percentChange)}% vs yesterday`;
+                    trend.className = 'traffic-card-trend traffic-trend-down';
+                } else {
+                    trend.innerHTML = `<i class="fas fa-equals"></i> Same as yesterday`;
+                    trend.className = 'traffic-card-trend';
+                }
+            }
+        }
+    
+        function trafficExportData() {
+            // Convert data to CSV
+            const headers = ['Page', 'Visits', 'Country', 'State/Region', 'City', 'Date'];
+    
+            const csvRows = [];
+            csvRows.push(headers.join(','));
+    
+            trafficFilteredData.forEach(entry => {
+                const row = [
+                    `"${entry.filename}"`,
+                    entry.visits,
+                    `"${entry.country || 'N/A'}"`,
+                    `"${entry.region || 'N/A'}"`,
+                    `"${entry.city || 'N/A'}"`,
+                    `"${trafficFormatDate(entry.date)}"`
+                ];
+                csvRows.push(row.join(','));
+            });
+    
+            const csvString = csvRows.join('\n');
+    
+            // Create download link
+            const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+    
+            const link = document.createElement('a');
+            link.setAttribute('href', url);
+            link.setAttribute('download', `page_traffic_${new Date().toISOString().slice(0, 10)}.csv`);
+            link.style.visibility = 'hidden';
+    
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+    
+        function trafficFormatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString();
+        }
+    
+        function trafficShowLoading(isLoading) {
+            const tableBody = document.getElementById('traffic-statsTable');
+    
+            if (isLoading) {
+                tableBody.innerHTML = `
+                    <tr class="traffic-tr">
+                        <td class="traffic-td" colspan="6">
+                            <div class="traffic-loading">
+                                <div class="traffic-loading-spinner"></div>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }
+        }
+    
+        function trafficShowError(message) {
+            const tableBody = document.getElementById('traffic-statsTable');
+    
+            tableBody.innerHTML = `
+                <tr class="traffic-tr">
+                    <td class="traffic-td" colspan="6">
+                        <div class="traffic-error-message">
+                            <i class="fas fa-exclamation-circle"></i> ${message}
+                        </div>
+                    </td>
+                </tr>
+            `;
+        }
+    </script>
+</body>
+</html>

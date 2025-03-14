@@ -1,0 +1,224 @@
+<!-- index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HCRF Badge Application Form</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        /* styles.css */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f8f9fa;
+    margin: 0;
+    padding: 0;
+}
+
+.containerForm {
+    max-width: 800px;
+    margin: 30px auto;
+    padding: 20px;
+    background: #fff;
+    border-radius: 5px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    border: 0.5px solid #beb6b1;
+}
+
+h2, h3 {
+    color: #333;
+}
+
+.form-title {
+    text-align: left;
+}
+
+.form-divider {
+    border: none;
+    height: 1px;
+    background: #ccc;
+    margin: 20px 0;
+}
+
+.form-group {
+    margin-bottom: 25px;
+}
+
+/* Floating Input Fields */
+.floating-input {
+    position: relative;
+    margin-bottom: 20px;
+}
+
+.floating-input input, 
+.floating-input textarea {
+    width: 90%;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    outline: none;
+    font-size: 16px;
+    background: transparent;
+}
+
+.floating-input label {
+    position: absolute;
+    left: 12px;
+    top: 12px;
+    color: #777;
+    background: white;
+    padding: 0 5px;
+    font-size: 16px;
+    transition: 0.3s;
+    pointer-events: none;
+}
+
+.floating-input input:focus + label, 
+.floating-input input:not(:placeholder-shown) + label,
+.floating-input textarea:focus + label,
+.floating-input textarea:not(:placeholder-shown) + label {
+    top: -10px;
+    left: 8px;
+    font-size: 12px;
+    color: #666;
+}
+
+/* Checkbox & Radio */
+input[type="checkbox"] {
+    margin-right: 5px;
+}
+
+/* File Upload */
+.file-upload input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background: #f9f9f9;
+}
+
+/* Buttons */
+.btn {
+    display: inline-block;
+    padding: 10px 20px;
+    font-size: 16px;
+    text-align: center;
+    cursor: pointer;
+    border: none;
+    border-radius: 5px;
+    color: white;
+    background-color: #007bff;
+    transition: 0.3s;
+}
+
+.btn:hover {
+    background-color: #0056b3;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+    .containerForm {
+        padding: 15px;
+    }
+}
+
+    </style>
+</head>
+<body>
+    
+    <section class="form-section py-5 bg-light">
+        <div class="containerForm">
+            <h2 class="form-title">HCRF Badge Application Form</h2>
+            <hr class="form-divider">
+
+            <form id="singleStepForm" enctype="multipart/form-data">
+                <!-- Business Information -->
+                <div class="form-group">
+                    <h3 class="form-heading">Business Information</h3>
+                    <div class="row">
+                        <div class="col-md-6 floating-input">
+                            <input type="text" id="businessName" name="businessName" required>
+                            <label for="businessName">Business Name</label>
+                        </div>
+                        <div class="col-md-6 floating-input">
+                            <input type="text" id="contactPerson" name="contactPerson" required>
+                            <label for="contactPerson">Contact Person</label>
+                        </div>
+                        <div class="col-md-6 floating-input">
+                            <input type="email" id="emailAddress" name="emailAddress" required>
+                            <label for="emailAddress">Email Address</label>
+                        </div>
+                        <div class="col-md-6 floating-input">
+                            <input type="tel" id="phoneNumber" name="phoneNumber" required>
+                            <label for="phoneNumber">Phone Number</label>
+                        </div>
+                        <div class="col-12 floating-input">
+                            <input type="text" id="businessAddress" name="businessAddress" required>
+                            <label for="businessAddress">Business Address</label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Badge Selection -->
+                <div class="form-group">
+                    <h3 class="form-heading">Select the Badge(s) to Apply For</h3>
+                    <div class="row">
+                        <div class="col-md-4"><label><input type="checkbox" name="badge" value="Authentic Craftsmanship"> Authentic Craftsmanship</label></div>
+                        <div class="col-md-4"><label><input type="checkbox" name="badge" value="Ethical Trade and Fair Wages"> Ethical Trade and Fair Wages</label></div>
+                        <div class="col-md-4"><label><input type="checkbox" name="badge" value="Sustainable Practices"> Sustainable Practices</label></div>
+                        <div class="col-md-4"><label><input type="checkbox" name="badge" value="Cultural Preservation"> Cultural Preservation</label></div>
+                        <div class="col-md-4"><label><input type="checkbox" name="badge" value="Innovative Craft Design"> Innovative Craft Design</label></div>
+                        <div class="col-md-4"><label><input type="checkbox" name="badge" value="Women Empowerment"> Women Empowerment</label></div>
+                        <div class="col-md-4"><label><input type="checkbox" name="badge" value="Innovation in Craft Technology"> Innovation in Craft Technology</label></div>
+                        <div class="col-md-4"><label><input type="checkbox" name="badge" value="Community Development"> Community Development</label></div>
+                        <div class="col-md-4"><label><input type="checkbox" name="badge" value="Craft Research"> Craft Research</label></div>
+                    </div>
+                </div>
+
+                <!-- Business Description -->
+                <div class="form-group floating-input">
+                    <textarea name="businessDescription" rows="5" required></textarea>
+                    <label>Business Description</label>
+                </div>
+
+                <!-- Production Methods -->
+                <div class="form-group floating-input">
+                    <textarea name="productionMethods" rows="5" required></textarea>
+                    <label>Production Methods</label>
+                </div>
+
+                <!-- Supporting Documentation -->
+                <div class="form-group">
+                    <h3 class="form-heading">Supporting Documentation</h3>
+                    <div class="row">
+                        <div class="col-md-6"><label><input type="checkbox" name="documentation" value="Product Catalog"> Product Catalog</label></div>
+                        <div class="col-md-6"><label><input type="checkbox" name="documentation" value="Financial Statements"> Financial Statements</label></div>
+                        <div class="col-md-6"><label><input type="checkbox" name="documentation" value="Sustainability Reports"> Sustainability Reports</label></div>
+                        <div class="col-md-6 floating-input" style="margin-top: 40px;">
+                            <input type="text" name="otherDocumentation">
+                            <label>Other (Specify)</label>
+                        </div>
+                    </div>
+
+                    <!-- File Upload -->
+                    <div class="file-upload">
+                        <label for="uploadDocumentation">Upload Supporting Documents (PDF, Images):</label>
+                        <input type="file" id="uploadDocumentation" name="uploadedFiles" multiple accept=".pdf,.jpg,.jpeg,.png" style="margin-top: 40px;">
+                    </div>
+                </div>
+
+                <!-- Certification -->
+                <div class="form-group">
+                    <label><input type="checkbox" name="certification" value="1" required> I certify that the information provided is accurate and true to the best of my knowledge.</label>
+                </div>
+
+                <!-- Submit Button -->
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Submit Application</button>
+                </div>
+            </form>
+        </div>
+    </section>
+
+</body>
+</html>

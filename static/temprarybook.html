@@ -1,0 +1,1266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Book Collection</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <style>
+    :root {
+      --primary-color: #4a6fa5;
+      --secondary-color: #166088;
+      --accent-color: #4fc3a1;
+      --text-color: #333;
+      --light-text: #666;
+      --background-color: #f8f9fa;
+      --card-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+      --transition: all 0.3s ease;
+    }
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    
+    body {
+      background-color: var(--background-color);
+      color: var(--text-color);
+      line-height: 1.6;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 2rem auto;
+      padding: 0 20px;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 2rem;
+      position: relative;
+    }
+
+    header h1 {
+      color: var(--primary-color);
+      font-size: 2.5rem;
+      margin-bottom: 0.5rem;
+      font-weight: 700;
+    }
+
+    header p {
+      color: var(--light-text);
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .filter-controls {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2rem;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .search-box {
+      display: flex;
+      background: white;
+      border: 1px solid #ddd;
+      border-radius: 30px;
+      overflow: hidden;
+      width: 300px;
+    }
+
+    .search-box input {
+      border: none;
+      outline: none;
+      padding: 10px 15px;
+      flex-grow: 1;
+    }
+
+    .search-box button {
+      background: var(--primary-color);
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .search-box button:hover {
+      background: var(--secondary-color);
+    }
+
+    .filter-dropdown {
+      position: relative;
+    }
+
+    .filter-dropdown select {
+      padding: 10px 20px;
+      border-radius: 30px;
+      border: 1px solid #ddd;
+      background: white;
+      appearance: none;
+      cursor: pointer;
+      outline: none;
+      padding-right: 40px;
+    }
+
+    .filter-dropdown::after {
+      content: '▼';
+      position: absolute;
+      right: 15px;
+      top: 50%;
+      transform: translateY(-50%);
+      pointer-events: none;
+      font-size: 0.8rem;
+    }
+
+    .books-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 25px;
+      margin-bottom: 3rem;
+    }
+
+    .book-card {
+      background: white;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: var(--card-shadow);
+      transition: var(--transition);
+      position: relative;
+    }
+
+    .book-card:hover {
+      transform: translateY(-10px);
+      box-shadow: 0 15px 25px rgba(0, 0, 0, 0.15);
+    }
+
+    .book-image {
+      height: 300px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .book-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: var(--transition);
+    }
+
+    .book-card:hover .book-image img {
+      transform: scale(1.05);
+    }
+
+    .book-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      opacity: 0;
+      transition: var(--transition);
+    }
+
+    .book-card:hover .book-overlay {
+      opacity: 1;
+    }
+
+    .overlay-buttons {
+      display: flex;
+      gap: 15px;
+    }
+
+    .overlay-btn {
+      background: var(--accent-color);
+      color: white;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .overlay-btn:hover {
+      transform: scale(1.1);
+      background: var(--primary-color);
+    }
+
+    .book-badge {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      background: var(--accent-color);
+      color: white;
+      padding: 5px 10px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      z-index: 2;
+    }
+
+    .book-info {
+      padding: 20px;
+    }
+
+    .book-title {
+      font-size: 1.2rem;
+      margin-bottom: 10px;
+      font-weight: 600;
+      color: var(--primary-color);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .book-author {
+      color: var(--light-text);
+      font-size: 0.9rem;
+      margin-bottom: 15px;
+    }
+
+    .book-description {
+      color: var(--text-color);
+      font-size: 0.9rem;
+      margin-bottom: 15px;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      height: 60px;
+    }
+
+    .book-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 20px 20px;
+    }
+
+    .book-price {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .original-price {
+      color: var(--light-text);
+      text-decoration: line-through;
+      font-size: 0.9rem;
+    }
+
+    .current-price {
+      color: var(--accent-color);
+      font-weight: 700;
+      font-size: 1.2rem;
+    }
+
+    .free-tag {
+      background: var(--accent-color);
+      color: white;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+
+    .membership-btn {
+      background: var(--primary-color);
+      color: white;
+      border: none;
+      padding: 8px 15px;
+      border-radius: 30px;
+      cursor: pointer;
+      transition: var(--transition);
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .membership-btn:hover {
+      background: var(--secondary-color);
+    }
+
+    .pagination {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 2rem;
+    }
+
+    .page-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: var(--transition);
+      background: white;
+      border: 1px solid #ddd;
+    }
+
+    .page-btn.active {
+      background: var(--primary-color);
+      color: white;
+      border-color: var(--primary-color);
+    }
+
+    .page-btn:hover:not(.active) {
+      background: #f1f1f1;
+    }
+
+    .loading-indicator {
+      display: none;
+      text-align: center;
+      padding: 2rem;
+    }
+
+    .loading-spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid rgba(0, 0, 0, 0.1);
+      border-left-color: var(--primary-color);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .empty-state {
+      display: none;
+      text-align: center;
+      padding: 3rem;
+    }
+
+    .empty-state i {
+      font-size: 3rem;
+      color: #ddd;
+      margin-bottom: 1rem;
+    }
+
+    .empty-state h3 {
+      color: var(--light-text);
+      margin-bottom: 0.5rem;
+    }
+
+    .empty-state p {
+      color: var(--light-text);
+      max-width: 400px;
+      margin: 0 auto;
+    }
+
+    /* Modal */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.8);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .modal.active {
+      display: flex;
+      opacity: 1;
+    }
+
+    .modal-content {
+      background-color: white;
+      margin: auto;
+      width: 80%;
+      max-width: 800px;
+      border-radius: 12px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      max-height: 90vh;
+    }
+
+    .modal-header {
+      padding: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #eee;
+    }
+
+    .modal-title {
+      font-size: 1.5rem;
+      color: var(--primary-color);
+    }
+
+    .close-modal {
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      cursor: pointer;
+      color: var(--light-text);
+    }
+
+    .modal-body {
+      padding: 20px;
+      overflow-y: auto;
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .book-detail-image {
+      flex: 0 0 300px;
+      max-height: 450px;
+    }
+
+    .book-detail-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 8px;
+    }
+
+    .book-details {
+      flex: 1;
+      min-width: 300px;
+    }
+
+    .book-detail-title {
+      font-size: 1.8rem;
+      margin-bottom: 10px;
+      color: var(--primary-color);
+    }
+
+    .book-detail-meta {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 15px;
+      flex-wrap: wrap;
+    }
+
+    .meta-item {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      color: var(--light-text);
+      font-size: 0.9rem;
+    }
+
+    .book-detail-description {
+      margin-bottom: 20px;
+      line-height: 1.8;
+    }
+
+    .book-actions {
+      display: flex;
+      gap: 15px;
+      margin-top: 20px;
+    }
+
+    .action-btn {
+      padding: 10px 20px;
+      border-radius: 30px;
+      cursor: pointer;
+      transition: var(--transition);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 500;
+    }
+
+    .primary-btn {
+      background: var(--primary-color);
+      color: white;
+      border: none;
+    }
+
+    .primary-btn:hover {
+      background: var(--secondary-color);
+    }
+
+    .outline-btn {
+      background: transparent;
+      color: var(--primary-color);
+      border: 1px solid var(--primary-color);
+    }
+
+    .outline-btn:hover {
+      background: rgba(74, 111, 165, 0.1);
+    }
+
+    .book-stats {
+      display: flex;
+      gap: 15px;
+      margin-top: 20px;
+      flex-wrap: wrap;
+    }
+
+    .stat-item {
+      background: #f8f9fa;
+      padding: 15px;
+      border-radius: 8px;
+      flex: 1;
+      min-width: 120px;
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--primary-color);
+      margin-bottom: 5px;
+    }
+
+    .stat-label {
+      color: var(--light-text);
+      font-size: 0.8rem;
+    }
+
+    /* Toast notification */
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: white;
+      padding: 15px 20px;
+      border-radius: 8px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transform: translateY(100px);
+      opacity: 0;
+      transition: all 0.3s ease;
+      z-index: 1000;
+    }
+
+    .toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    .toast i {
+      color: var(--accent-color);
+      font-size: 1.2rem;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      header h1 {
+        font-size: 2rem;
+      }
+      
+      .filter-controls {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .search-box {
+        width: 100%;
+      }
+
+      .modal-content {
+        width: 95%;
+      }
+
+      .modal-body {
+        flex-direction: column;
+      }
+
+      .book-detail-image {
+        flex: 0 0 auto;
+        max-height: 300px;
+      }
+    }
+
+    /* Animations */
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .fade-in {
+      animation: fadeIn 0.5s ease forwards;
+    }
+
+    /* Skeleton loading */
+    .skeleton {
+      background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+      background-size: 200% 100%;
+      animation: loading 1.5s infinite;
+      border-radius: 4px;
+    }
+
+    @keyframes loading {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    /* Bookmark heart animation */
+    .heart-icon {
+      transition: transform 0.3s ease;
+    }
+
+    .heart-icon.active {
+      transform: scale(1.2);
+      color: #ff4757;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Discover Amazing Books</h1>
+      <p>Explore our curated collection of books across various genres. Get unlimited access with a membership.</p>
+    </header>
+
+    <div class="filter-controls">
+      <div class="search-box">
+        <input type="text" id="search-input" placeholder="Search by title, author or genre...">
+        <button type="button" id="search-btn"><i class="fas fa-search"></i></button>
+      </div>
+      <div class="filter-dropdown">
+        <select id="genre-filter">
+          <option value="all">All Genres</option>
+          <option value="fiction">Fiction</option>
+          <option value="non-fiction">Non-Fiction</option>
+          <option value="science">Science</option>
+          <option value="business">Business</option>
+          <option value="technology">Technology</option>
+        </select>
+      </div>
+      <div class="filter-dropdown">
+        <select id="sort-by">
+          <option value="newest">Newest First</option>
+          <option value="popularity">Popularity</option>
+          <option value="price-low">Price: Low to High</option>
+          <option value="price-high">Price: High to Low</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="loading-indicator" id="loading-indicator">
+      <div class="loading-spinner"></div>
+      <p>Loading books...</p>
+    </div>
+
+    <div class="empty-state" id="empty-state">
+      <i class="fas fa-book-open"></i>
+      <h3>No books found</h3>
+      <p>We couldn't find any books matching your search criteria. Try adjusting your filters or search term.</p>
+    </div>
+
+    <div class="books-grid" id="books-grid">
+      <!-- Books will be dynamically loaded here -->
+    </div>
+
+    <div class="pagination" id="pagination">
+      <button class="page-btn" data-page="1">1</button>
+      <button class="page-btn" data-page="2">2</button>
+      <button class="page-btn" data-page="3">3</button>
+      <button class="page-btn" data-page="next"><i class="fas fa-chevron-right"></i></button>
+    </div>
+  </div>
+
+  <!-- Book Detail Modal -->
+  <div class="modal" id="book-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 class="modal-title">Book Details</h2>
+        <button class="close-modal" id="close-modal">&times;</button>
+      </div>
+      <div class="modal-body" id="modal-body">
+        <!-- Book details will be loaded here -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div class="toast" id="toast">
+    <i class="fas fa-check-circle"></i>
+    <span id="toast-message">Book added to your favorites!</span>
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+      // Cache DOM elements
+      const booksGrid = document.getElementById('books-grid');
+      const loadingIndicator = document.getElementById('loading-indicator');
+      const emptyState = document.getElementById('empty-state');
+      const searchInput = document.getElementById('search-input');
+      const searchBtn = document.getElementById('search-btn');
+      const genreFilter = document.getElementById('genre-filter');
+      const sortBy = document.getElementById('sort-by');
+      const bookModal = document.getElementById('book-modal');
+      const closeModal = document.getElementById('close-modal');
+      const modalBody = document.getElementById('modal-body');
+      const toast = document.getElementById('toast');
+      const toastMessage = document.getElementById('toast-message');
+      const pagination = document.getElementById('pagination');
+
+      // State variables
+      let allBooks = [];
+      let filteredBooks = [];
+      let currentPage = 1;
+      let booksPerPage = 8;
+      let isLoading = false;
+      let searchTerm = '';
+      let selectedGenre = 'all';
+      let sortOption = 'newest';
+      let favorites = JSON.parse(localStorage.getItem('bookFavorites')) || [];
+
+      // Show loading state
+      function showLoading() {
+        isLoading = true;
+        loadingIndicator.style.display = 'block';
+        booksGrid.style.display = 'none';
+        emptyState.style.display = 'none';
+      }
+
+      // Hide loading state
+      function hideLoading() {
+        isLoading = false;
+        loadingIndicator.style.display = 'none';
+        
+        if (filteredBooks.length === 0) {
+          emptyState.style.display = 'block';
+          booksGrid.style.display = 'none';
+        } else {
+          emptyState.style.display = 'none';
+          booksGrid.style.display = 'grid';
+        }
+      }
+
+      // Fetch books from API
+      function fetchBooks() {
+        showLoading();
+        
+        // Simulating loading time for demo
+        setTimeout(() => {
+          fetch('https://api.khcrf.org/api/ebook/best_practices')
+            .then(response => {
+              if (!response.ok) {
+                throw new Error('Network response was not ok');
+              }
+              return response.json();
+            })
+            .then(books => {
+              // Enhance books with additional properties
+              allBooks = books.map(book => ({
+                ...book,
+                description: book.description || 'An exciting read that will keep you engaged from start to finish!',
+                author: book.author || 'Unknown Author',
+                genre: book.genre || 'General',
+                rating: book.rating || (Math.random() * 2 + 3).toFixed(1), // Random rating between 3 and 5
+                pages: book.pages || Math.floor(Math.random() * 300) + 100, // Random pages between 100 and 400
+                published: book.published || `${Math.floor(Math.random() * 10) + 2010}` // Random year between 2010 and 2020
+              }));
+              
+              applyFilters();
+              hideLoading();
+            })
+            .catch(error => {
+              console.error('Error fetching books:', error);
+              hideLoading();
+              showToast('Error loading books. Please try again later.', 'error');
+            });
+        }, 800);
+      }
+
+      // Apply filters and sort
+      function applyFilters() {
+        filteredBooks = allBooks.filter(book => {
+          // Apply search filter
+          const matchesSearch = searchTerm === '' || 
+                              book.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                              (book.author && book.author.toLowerCase().includes(searchTerm.toLowerCase())) ||
+                              (book.genre && book.genre.toLowerCase().includes(searchTerm.toLowerCase()));
+          
+          // Apply genre filter
+          const matchesGenre = selectedGenre === 'all' || 
+                              (book.genre && book.genre.toLowerCase() === selectedGenre.toLowerCase());
+          
+          return matchesSearch && matchesGenre;
+        });
+
+        // Apply sorting
+        switch(sortOption) {
+          case 'newest':
+            filteredBooks.sort((a, b) => parseInt(b.published) - parseInt(a.published));
+            break;
+          case 'popularity':
+            filteredBooks.sort((a, b) => parseFloat(b.rating) - parseFloat(a.rating));
+            break;
+          case 'price-low':
+            filteredBooks.sort((a, b) => parseFloat(a.price) - parseFloat(b.price));
+            break;
+          case 'price-high':
+            filteredBooks.sort((a, b) => parseFloat(b.price) - parseFloat(a.price));
+            break;
+        }
+
+        renderBooks();
+        updatePagination();
+      }
+
+      // Render books
+      function renderBooks() {
+        booksGrid.innerHTML = '';
+        
+        const startIndex = (currentPage - 1) * booksPerPage;
+        const endIndex = startIndex + booksPerPage;
+        const booksToShow = filteredBooks.slice(startIndex, endIndex);
+        
+        if (booksToShow.length === 0) {
+          emptyState.style.display = 'block';
+          booksGrid.style.display = 'none';
+        } else {
+          emptyState.style.display = 'none';
+          booksGrid.style.display = 'grid';
+          
+          booksToShow.forEach((book, index) => {
+            const isFavorite = favorites.includes(book.id);
+            const bookElement = document.createElement('div');
+            bookElement.className = 'book-card fade-in';
+            bookElement.style.animationDelay = `${index * 0.1}s`;
+            
+            bookElement.innerHTML = `
+              <div class="book-badge">New</div>
+              <div class="book-image">
+                <img src="https://api.khcrf.org/uploads/${book.coverImage}" alt="${book.title}">
+                <div class="book-overlay">
+                  <div class="overlay-buttons">
+                    <div class="overlay-btn preview-btn" data-id="${book.id}">
+                      <i class="fas fa-eye"></i>
+                    </div>
+                    <div class="overlay-btn favorite-btn ${isFavorite ? 'active' : ''}" data-id="${book.id}">
+                      <i class="fas fa-heart heart-icon ${isFavorite ? 'active' : ''}"></i>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="book-info">
+                <h3 class="book-title">${book.title}</h3>
+                <p class="book-author">by ${book.author}</p>
+                <p class="book-description">${book.description}</p>
+              </div>
+              <div class="book-footer">
+                <div class="book-price">
+                  <span class="original-price">$${book.price}</span>
+                  <span class="free-tag">Free</span>
+                </div>
+                <a href="memberships.html" class="membership-btn">
+                  <i class="fas fa-crown"></i> Get Membership
+                </a>
+              </div>
+            `;
+            
+            booksGrid.appendChild(bookElement);
+          });
+          
+          // Add event listeners
+          document.querySelectorAll('.preview-btn').forEach(button => {
+            button.addEventListener('click', function() {
+              const bookId = this.getAttribute('data-id');
+              showBookDetails(bookId);
+            });
+          });
+          
+          document.querySelectorAll('.favorite-btn').forEach(button => {
+            button.addEventListener('click', function() {
+              const bookId = this.getAttribute('data-id');
+              toggleFavorite(bookId, this);
+            });
+          });
+        }
+      }
+
+      // Update pagination
+      function updatePagination() {
+        const totalPages = Math.ceil(filteredBooks.length / booksPerPage);
+        pagination.innerHTML = '';
+        
+        if (totalPages <= 1) {
+          pagination.style.display = 'none';
+        } else {
+          pagination.style.display = 'flex';
+          
+          // Previous button
+          if (currentPage > 1) {
+            const prevBtn = document.createElement('button');
+            prevBtn.className = 'page-btn';
+            prevBtn.innerHTML = '<i class="fas fa-chevron-left"></i>';
+            prevBtn.addEventListener('click', () => changePage(currentPage - 1));
+            pagination.appendChild(prevBtn);
+          }
+          
+          // Page numbers
+          for (let i = 1; i <= totalPages; i++) {
+            if (i === currentPage || 
+                i === 1 || 
+                i === totalPages || 
+                (i >= currentPage - 1 && i <= currentPage + 1)) {
+              
+              const pageBtn = document.createElement('button');
+              pageBtn.className = `page-btn ${i === currentPage ? 'active' : ''}`;
+              pageBtn.textContent = i;
+              pageBtn.addEventListener('click', () => changePage(i));
+              pagination.appendChild(pageBtn);
+            } else if (i === currentPage - 2 || i === currentPage + 2) {
+              const ellipsis = document.createElement('span');
+              ellipsis.className = 'page-btn';
+              ellipsis.textContent = '...';
+              ellipsis.style.cursor = 'default';
+              pagination.appendChild(ellipsis);
+            }
+          }
+          
+          // Next button
+          if (currentPage < totalPages) {
+            const nextBtn = document.createElement('button');
+            nextBtn.className = 'page-btn';
+            nextBtn.innerHTML = '<i class="fas fa-chevron-right"></i>';
+            nextBtn.addEventListener('click', () => changePage(currentPage + 1));
+            pagination.appendChild(nextBtn);
+          }
+        }
+      }
+
+      // Change page
+      function changePage(page) {
+        currentPage = page;
+        renderBooks();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+
+      // Show book details
+      function showBookDetails(bookId) {
+        const book = allBooks.find(b => b.id === bookId);
+        if (!book) return;
+        
+        modalBody.innerHTML = `
+          <div class="book-detail-image">
+            <img src="https://api.khcrf.org/uploads/${book.coverImage}" alt="${book.title}">
+          </div>
+          <div class="book-details">
+            <h2 class="book-detail-title">${book.title}</h2>
+            <div class="book-detail-meta">
+              <div class="meta-item">
+                <i class="fas fa-user"></i> ${book.author}
+              </div>
+              <div class="meta-item">
+                <i class="fas fa-tag"></i> ${book.genre}
+              </div>
+              <div class="meta-item">
+                <i class="fas fa-star"></i> ${book.rating}/5
+              </div>
+              <div class="meta-item">
+                <i class="fas fa-calendar"></i> ${book.published}
+              </div>
+            </div>
+<div class="book-detail-description">
+              ${book.description || 'No description available for this book.'}
+              <p>This fascinating book will take you on a journey through ${book.genre} concepts, providing insightful analysis and practical examples that readers of all levels can appreciate.</p>
+              <p>With its engaging writing style and comprehensive coverage, this book has earned a rating of ${book.rating}/5 from our readers.</p>
+            </div>
+            
+            <div class="book-stats">
+              <div class="stat-item">
+                <div class="stat-value">${book.pages}</div>
+                <div class="stat-label">Pages</div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-value">${book.rating}</div>
+                <div class="stat-label">Rating</div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-value">${book.published}</div>
+                <div class="stat-label">Published</div>
+              </div>
+            </div>
+            
+            <div class="book-actions">
+              <button class="action-btn primary-btn">
+                <i class="fas fa-crown"></i> Get with Membership
+              </button>
+              <button class="action-btn outline-btn favorite-action" data-id="${book.id}">
+                <i class="fas fa-heart"></i> ${favorites.includes(book.id) ? 'Remove from Favorites' : 'Add to Favorites'}
+              </button>
+            </div>
+          </div>
+        `;
+        
+        // Add event listener to favorite button in modal
+        const favoriteAction = modalBody.querySelector('.favorite-action');
+        if (favoriteAction) {
+          favoriteAction.addEventListener('click', function() {
+            const bookId = this.getAttribute('data-id');
+            toggleFavorite(bookId);
+            this.innerHTML = `<i class="fas fa-heart"></i> ${favorites.includes(bookId) ? 'Remove from Favorites' : 'Add to Favorites'}`;
+          });
+        }
+        
+        bookModal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+      }
+
+      // Toggle favorite
+      function toggleFavorite(bookId, buttonElement) {
+        const index = favorites.indexOf(bookId);
+        
+        if (index === -1) {
+          // Add to favorites
+          favorites.push(bookId);
+          showToast('Book added to your favorites!');
+        } else {
+          // Remove from favorites
+          favorites.splice(index, 1);
+          showToast('Book removed from your favorites.');
+        }
+        
+        // Update local storage
+        localStorage.setItem('bookFavorites', JSON.stringify(favorites));
+        
+        // Update UI if button element is provided
+        if (buttonElement) {
+          const heartIcon = buttonElement.querySelector('.heart-icon');
+          if (index === -1) {
+            buttonElement.classList.add('active');
+            heartIcon.classList.add('active');
+          } else {
+            buttonElement.classList.remove('active');
+            heartIcon.classList.remove('active');
+          }
+        }
+        
+        // Update all instances of this book in the grid
+        document.querySelectorAll(`.favorite-btn[data-id="${bookId}"]`).forEach(btn => {
+          const heart = btn.querySelector('.heart-icon');
+          if (favorites.includes(bookId)) {
+            btn.classList.add('active');
+            heart.classList.add('active');
+          } else {
+            btn.classList.remove('active');
+            heart.classList.remove('active');
+          }
+        });
+      }
+
+      // Show toast notification
+      function showToast(message, type = 'success') {
+        toastMessage.textContent = message;
+        toast.className = `toast show ${type}`;
+        
+        setTimeout(() => {
+          toast.className = toast.className.replace('show', '');
+        }, 3000);
+      }
+
+      // Close modal
+      function closeBookModal() {
+        bookModal.classList.remove('active');
+        document.body.style.overflow = '';
+      }
+
+      // Event listeners
+      searchBtn.addEventListener('click', function() {
+        searchTerm = searchInput.value.trim();
+        currentPage = 1;
+        applyFilters();
+      });
+
+      searchInput.addEventListener('keyup', function(e) {
+        if (e.key === 'Enter') {
+          searchTerm = searchInput.value.trim();
+          currentPage = 1;
+          applyFilters();
+        }
+      });
+
+      genreFilter.addEventListener('change', function() {
+        selectedGenre = this.value;
+        currentPage = 1;
+        applyFilters();
+      });
+
+      sortBy.addEventListener('change', function() {
+        sortOption = this.value;
+        currentPage = 1;
+        applyFilters();
+      });
+
+      closeModal.addEventListener('click', closeBookModal);
+
+      // Close modal when clicking outside
+      bookModal.addEventListener('click', function(e) {
+        if (e.target === bookModal) {
+          closeBookModal();
+        }
+      });
+
+      // Close modal with Escape key
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && bookModal.classList.contains('active')) {
+          closeBookModal();
+        }
+      });
+
+      // Add skeleton loading effect
+      function showSkeletonLoading() {
+        booksGrid.innerHTML = '';
+        for (let i = 0; i < booksPerPage; i++) {
+          const skeletonItem = document.createElement('div');
+          skeletonItem.className = 'book-card';
+          skeletonItem.innerHTML = `
+            <div class="book-image skeleton" style="height: 300px;"></div>
+            <div class="book-info">
+              <div class="skeleton" style="height: 24px; width: 80%; margin-bottom: 10px;"></div>
+              <div class="skeleton" style="height: 18px; width: 60%; margin-bottom: 15px;"></div>
+              <div class="skeleton" style="height: 16px; width: 100%; margin-bottom: 8px;"></div>
+              <div class="skeleton" style="height: 16px; width: 100%; margin-bottom: 8px;"></div>
+              <div class="skeleton" style="height: 16px; width: 70%; margin-bottom: 8px;"></div>
+            </div>
+            <div class="book-footer">
+              <div class="skeleton" style="height: 24px; width: 40%;"></div>
+              <div class="skeleton" style="height: 36px; width: 40%; border-radius: 30px;"></div>
+            </div>
+          `;
+          booksGrid.appendChild(skeletonItem);
+        }
+      }
+
+      // Initialize
+      showSkeletonLoading();
+      fetchBooks();
+
+      // Add lazy loading for images
+      const lazyLoadImages = () => {
+        const images = document.querySelectorAll('.book-image img');
+        const options = {
+          root: null,
+          rootMargin: '0px',
+          threshold: 0.1
+        };
+
+        const imageObserver = new IntersectionObserver((entries, observer) => {
+          entries.forEach(entry => {
+            if (entry.isIntersecting) {
+              const img = entry.target;
+              const src = img.getAttribute('data-src');
+              if (src) {
+                img.src = src;
+                img.removeAttribute('data-src');
+              }
+              observer.unobserve(img);
+            }
+          });
+        }, options);
+
+        images.forEach(img => {
+          if (img.getAttribute('data-src')) {
+            imageObserver.observe(img);
+          }
+        });
+      };
+
+      // Example of enhancing with additional data fetches
+      function fetchBookRecommendations(bookId) {
+        // This would be a real API call in production
+        return new Promise(resolve => {
+          setTimeout(() => {
+            resolve([
+              {
+                id: 'rec1',
+                title: 'Similar Book 1',
+                coverImage: 'default-cover.jpg',
+                author: 'Another Author'
+              },
+              {
+                id: 'rec2',
+                title: 'Similar Book 2',
+                coverImage: 'default-cover.jpg',
+                author: 'Different Author'
+              }
+            ]);
+          }, 300);
+        });
+      }
+
+      // Add expandable sections to book detail
+      function addExpandableSections() {
+        const expandButtons = document.querySelectorAll('.expand-btn');
+        expandButtons.forEach(button => {
+          button.addEventListener('click', function() {
+            const section = this.closest('.expandable-section');
+            const content = section.querySelector('.expandable-content');
+            
+            content.style.maxHeight = content.style.maxHeight ? null : content.scrollHeight + 'px';
+            this.querySelector('i').classList.toggle('fa-plus');
+            this.querySelector('i').classList.toggle('fa-minus');
+          });
+        });
+      }
+
+      // Example function to handle membership button click
+      document.addEventListener('click', function(e) {
+        if (e.target.closest('.membership-btn')) {
+          // Here you would handle membership logic
+          // For demo purposes, we'll just show a toast
+          e.preventDefault();
+          showToast('Redirecting to membership page...');
+          setTimeout(() => {
+            window.location.href = 'memberships.html';
+          }, 1500);
+        }
+      });
+
+      // Track impressions for analytics
+      function trackBookImpression(bookId) {
+        // In a real application, this would send data to an analytics service
+        console.log(`Book impression: ${bookId}`);
+      }
+
+      // Add debounce for search to improve performance
+      function debounce(func, delay) {
+        let timeoutId;
+        return function(...args) {
+          if (timeoutId) {
+            clearTimeout(timeoutId);
+          }
+          timeoutId = setTimeout(() => {
+            func.apply(this, args);
+          }, delay);
+        };
+      }
+
+      // Apply debounce to search
+      const debouncedSearch = debounce(function() {
+        searchTerm = searchInput.value.trim();
+        currentPage = 1;
+        applyFilters();
+      }, 300);
+
+      searchInput.addEventListener('input', debouncedSearch);
+    });
+  </script>
+</body>
+</html>

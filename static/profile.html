@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Profile</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            padding: 12px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+        th {
+            background-color: #f4f4f4;
+        }
+        .status-badge {
+            padding: 5px 10px;
+            border-radius: 4px;
+            display: inline-block;
+        }
+    </style>
+</head>
+<body>
+    <h1 id="welcome-message">Welcome to Your Profile</h1>
+    <div id="user-details"></div>
+
+    <script>
+        // Function to decode JWT token
+        function decodeJWT(token) {
+            try {
+                const base64Url = token.split('.')[1];
+                const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+                return JSON.parse(window.atob(base64));
+            } catch (error) {
+                console.error('Error decoding token:', error);
+                return null;
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            const token = localStorage.getItem("authToken");
+            
+            if (!token) {
+                alert("You must be logged in to view your profile.");
+                window.location.href = "login.html";
+                return;
+            }
+
+            // Decode the token to get user data
+            const userData = decodeJWT(token);
+            
+            if (!userData) {
+                alert("Invalid token format.");
+                window.location.href = "login.html";
+                return;
+            }
+
+            // Update welcome message
+            document.getElementById('welcome-message').textContent = 
+                `Welcome, ${userData.email.split('@')[0]} on Hamadan Craft Revival Foundation!`; // Using email username as name
+
+            // Display user profile
+            const userDetailsDiv = document.getElementById('user-details');
+            userDetailsDiv.innerHTML = `
+                <h2>User Profile Details</h2>
+                <table>
+                    <tr>
+                        <th>Field</th>
+                        <th>Details</th>
+                    </tr>
+                    <tr>
+                        <td>Email</td>
+                        <td>${userData.email}</td>
+                    </tr>
+                    <tr>
+                        <td>Account Type</td>
+                        <td>${userData.isAdmin ? 'Administrator' : 'Regular User'}</td>
+                    </tr>
+                    <tr>
+                        <td>Membership Status</td>
+                        <td>${userData.isMember ? 'Active Member' : 'Non-Member'}</td>
+                    </tr>
+                </table>
+
+                ${userData.isAdmin ? `
+                    <div style="margin-top: 20px; padding: 15px; background-color: #f8f9fa; border-radius: 5px;">
+                        <h3>Administrator Panel</h3>
+                        <p>You have administrative privileges on this platform.</p>
+                    </div>
+                ` : ''}
+            `;
+        });
+    </script>
+</body>
+</html>
